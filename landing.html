@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MenuEdge — AI Menu Optimiser for Restaurants</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0D0B09;
+      --surface:#161412;
+      --surface-2:#1E1A16;
+      --gold:#E8B46A;
+      --gold-pale:rgba(232,180,106,0.1);
+      --gold-border:rgba(232,180,106,0.22);
+      --terra:#D4622A;
+      --terra-glow:rgba(212,98,42,0.4);
+      --cream:#F5EDD8;
+      --cream-2:rgba(245,237,216,0.62);
+      --cream-3:rgba(245,237,216,0.32);
+      --green:#4ADE80;
+      --green-pale:rgba(74,222,128,0.1);
+      --green-border:rgba(74,222,128,0.22);
+      --border:rgba(245,237,216,0.07);
+      --border-2:rgba(245,237,216,0.12);
+    }
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Plus Jakarta Sans',sans-serif;
+      background:var(--bg);color:var(--cream);
+      min-height:100vh;overflow-x:hidden;
+    }
+
+    /* food bg */
+    body::before{
+      content:'';position:fixed;inset:-6%;z-index:-1;pointer-events:none;
+      background:url('/static/food-bg.jpg') center 65%/cover no-repeat;
+      opacity:.06;
+      animation:foodToss 20s ease-in-out infinite;
+      will-change:transform;
+      transform-origin:center center;
+    }
+    @keyframes foodToss{
+      0%   {transform:scale(1)    translate(0,0)         rotate(0deg)}
+      15%  {transform:scale(1.04) translate(1.2%,-1.5%)  rotate(.25deg)}
+      30%  {transform:scale(1.07) translate(-.8%,1.2%)   rotate(-.3deg)}
+      45%  {transform:scale(1.03) translate(1.5%,.8%)    rotate(.15deg)}
+      60%  {transform:scale(1.06) translate(-.5%,-1%)    rotate(-.2deg)}
+      75%  {transform:scale(1.04) translate(.8%,1.5%)    rotate(.1deg)}
+      90%  {transform:scale(1.02) translate(-1.2%,.3%)   rotate(-.15deg)}
+      100% {transform:scale(1)    translate(0,0)         rotate(0deg)}
+    }
+    /* noise */
+    body::after{
+      content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    ::-webkit-scrollbar{width:5px}
+    ::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+
+    /* ── NAV ── */
+    nav{
+      position:fixed;top:0;left:0;right:0;z-index:100;
+      height:68px;display:flex;align-items:center;justify-content:space-between;
+      padding:0 5%;
+      background:rgba(13,11,9,0.8);
+      border-bottom:1px solid var(--border);
+      backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+    }
+    .nav-brand{display:flex;align-items:center;gap:8px;text-decoration:none}
+    .nav-logo{font-family:'Fraunces',serif;font-size:20px;font-weight:700;color:var(--cream);letter-spacing:3px}
+    .nav-dot{width:7px;height:7px;background:var(--terra);border-radius:50%;box-shadow:0 0 10px var(--terra-glow)}
+    .nav-links{display:flex;align-items:center;gap:8px}
+    .nav-link{font-size:13px;font-weight:600;color:var(--cream-2);text-decoration:none;padding:7px 14px;border-radius:8px;transition:all .18s}
+    .nav-link:hover{color:var(--cream);background:rgba(255,255,255,.05)}
+    .btn-cta-sm{
+      background:var(--terra);color:#fff;border:none;border-radius:9px;
+      padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer;
+      font-family:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:7px;
+      box-shadow:0 4px 16px rgba(212,98,42,.35);transition:all .18s;
+    }
+    .btn-cta-sm:hover{transform:translateY(-1px);box-shadow:0 6px 22px rgba(212,98,42,.5)}
+
+    /* ── HERO ── */
+    .hero{
+      min-height:100vh;display:flex;flex-direction:column;align-items:center;
+      justify-content:center;text-align:center;padding:120px 5% 80px;
+      position:relative;overflow:hidden;
+    }
+    .hero-glow{
+      position:absolute;width:600px;height:600px;border-radius:50%;
+      background:radial-gradient(circle,rgba(212,98,42,.12),transparent 70%);
+      top:50%;left:50%;transform:translate(-50%,-55%);pointer-events:none;
+    }
+    .hero-eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      background:var(--gold-pale);border:1px solid var(--gold-border);
+      color:var(--gold);font-size:12px;font-weight:700;letter-spacing:1.2px;
+      text-transform:uppercase;padding:6px 16px;border-radius:20px;margin-bottom:28px;
+    }
+    .hero h1{
+      font-family:'Fraunces',serif;
+      font-size:clamp(42px,7vw,88px);
+      font-weight:700;line-height:1.06;
+      color:var(--cream);margin-bottom:6px;
+    }
+    .hero h1 em{font-style:italic;color:var(--gold)}
+    .hero h1 span{color:var(--terra)}
+    .hero-sub{
+      font-size:clamp(15px,2vw,19px);color:var(--cream-2);
+      max-width:560px;margin:20px auto 0;line-height:1.7;
+    }
+    .hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:40px}
+    .btn-hero{
+      display:inline-flex;align-items:center;gap:9px;
+      background:linear-gradient(135deg,var(--terra),#E8731A);
+      color:#fff;border:none;border-radius:13px;
+      padding:16px 34px;font-size:16px;font-weight:700;cursor:pointer;
+      font-family:inherit;text-decoration:none;
+      box-shadow:0 6px 28px rgba(212,98,42,.45);transition:all .2s;
+    }
+    .btn-hero:hover{transform:translateY(-2px);box-shadow:0 10px 36px rgba(212,98,42,.6)}
+    .btn-hero-ghost{
+      display:inline-flex;align-items:center;gap:9px;
+      background:transparent;color:var(--cream-2);
+      border:1px solid var(--border-2);border-radius:13px;
+      padding:15px 28px;font-size:15px;font-weight:600;cursor:pointer;
+      font-family:inherit;text-decoration:none;transition:all .2s;
+    }
+    .btn-hero-ghost:hover{border-color:rgba(245,237,216,.3);color:var(--cream)}
+    .hero-trust{
+      display:flex;align-items:center;gap:20px;justify-content:center;
+      margin-top:52px;flex-wrap:wrap;
+    }
+    .trust-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--cream-3);font-weight:600}
+    .trust-dot{width:4px;height:4px;background:var(--border-2);border-radius:50%}
+
+    /* ── MOCK DASHBOARD ── */
+    .hero-visual{
+      margin-top:64px;position:relative;width:100%;max-width:900px;
+    }
+    .mock-frame{
+      background:var(--surface);border:1px solid var(--border-2);border-radius:20px;
+      overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6),0 0 0 1px rgba(232,180,106,.06);
+    }
+    .mock-bar{
+      background:#1a1614;border-bottom:1px solid var(--border);
+      padding:12px 18px;display:flex;align-items:center;gap:8px;
+    }
+    .mock-dot{width:10px;height:10px;border-radius:50%}
+    .mock-url{
+      flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);
+      border-radius:6px;padding:5px 12px;font-size:11px;color:var(--cream-3);
+      font-family:monospace;text-align:center;
+    }
+    .mock-body{padding:24px;display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px}
+    .mock-card{
+      background:var(--surface-2);border:1px solid var(--border);
+      border-radius:12px;padding:16px;position:relative;overflow:hidden;
+    }
+    .mock-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+    .mc-green::before{background:linear-gradient(90deg,#4ADE80,transparent)}
+    .mc-blue::before{background:linear-gradient(90deg,#60A5FA,transparent)}
+    .mc-amber::before{background:linear-gradient(90deg,#FBBF24,transparent)}
+    .mc-red::before{background:linear-gradient(90deg,#FC8181,transparent)}
+    .mock-card-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-3);margin-bottom:8px}
+    .mock-card-num{font-family:'Fraunces',serif;font-size:32px;font-weight:700;line-height:1}
+    .mc-green .mock-card-num{color:#4ADE80}
+    .mc-blue .mock-card-num{color:#60A5FA}
+    .mc-amber .mock-card-num{color:#FBBF24}
+    .mc-red .mock-card-num{color:#FC8181}
+    .mock-card-desc{font-size:10px;color:var(--cream-3);margin-top:5px;line-height:1.4}
+    .mock-hero-card{
+      grid-column:1/-1;
+      background:linear-gradient(135deg,#1A0D06,#221308,#1E0B0E);
+      border:1px solid rgba(232,180,106,.14);border-radius:12px;
+      padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    }
+    .mock-uplift-label{font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(232,180,106,.6);margin-bottom:6px}
+    .mock-uplift-num{font-family:'Fraunces',serif;font-size:36px;font-weight:700;color:var(--gold)}
+    .mock-uplift-insight{font-size:11px;color:rgba(245,237,216,.45);margin-top:6px;line-height:1.5;max-width:340px}
+    .mock-tag{
+      display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;
+      background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);
+      color:#4ADE80;padding:3px 9px;border-radius:20px;margin-bottom:8px;
+    }
+
+    /* ── SECTION COMMONS ── */
+    section{padding:100px 5%}
+    .section-eyebrow{
+      display:inline-flex;align-items:center;gap:8px;
+      font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      color:var(--terra);margin-bottom:18px;
+    }
+    .section-eyebrow::after{content:'';width:28px;height:1px;background:var(--terra);opacity:.5}
+    .section-title{
+      font-family:'Fraunces',serif;font-size:clamp(30px,4vw,48px);
+      font-weight:700;color:var(--cream);line-height:1.15;margin-bottom:16px;
+    }
+    .section-title em{font-style:italic;color:var(--gold)}
+    .section-sub{font-size:16px;color:var(--cream-2);line-height:1.7;max-width:520px}
+    .text-center{text-align:center}
+    .text-center .section-sub{margin:0 auto}
+    .divider{width:100%;height:1px;background:var(--border);margin:0}
+
+    /* ── HOW IT WORKS ── */
+    .how-grid{
+      display:grid;grid-template-columns:repeat(3,1fr);
+      gap:2px;margin-top:64px;
+      background:var(--border);border-radius:18px;overflow:hidden;
+    }
+    .how-step{
+      background:var(--surface);padding:36px 32px;position:relative;
+      transition:background .2s;
+    }
+    .how-step:hover{background:var(--surface-2)}
+    .step-num{
+      width:42px;height:42px;border-radius:12px;
+      background:var(--gold-pale);border:1px solid var(--gold-border);
+      display:flex;align-items:center;justify-content:center;
+      font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--gold);
+      margin-bottom:22px;
+    }
+    .step-icon{width:40px;height:40px;margin-bottom:16px;display:flex;align-items:center;justify-content:center}
+    .step-icon svg{width:28px;height:28px}
+    .step-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--cream);margin-bottom:10px}
+    .step-desc{font-size:13px;color:var(--cream-2);line-height:1.65}
+    .step-connector{
+      position:absolute;top:44px;right:-1px;
+      width:2px;height:24px;background:var(--gold-border);
+    }
+
+    /* ── FEATURES ── */
+    .features-grid{
+      display:grid;grid-template-columns:repeat(2,1fr);
+      gap:20px;margin-top:60px;
+    }
+    .feat-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:18px;padding:32px;position:relative;overflow:hidden;
+      transition:transform .2s,border-color .2s;
+    }
+    .feat-card:hover{transform:translateY(-3px);border-color:var(--border-2)}
+    .feat-card.feat-lg{grid-column:1/-1}
+    .feat-icon{
+      width:48px;height:48px;border-radius:14px;display:flex;align-items:center;
+      justify-content:center;margin-bottom:20px;
+    }
+    .feat-icon svg{width:24px;height:24px;flex-shrink:0}
+    .feat-icon-green{background:var(--green-pale);border:1px solid var(--green-border)}
+    .feat-icon-gold{background:var(--gold-pale);border:1px solid var(--gold-border)}
+    .feat-icon-red{background:rgba(252,129,129,.1);border:1px solid rgba(252,129,129,.22)}
+    .feat-icon-purple{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.22)}
+    .feat-icon-blue{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.22)}
+    .feat-title{font-family:'Fraunces',serif;font-size:21px;font-weight:600;color:var(--cream);margin-bottom:10px}
+    .feat-desc{font-size:13px;color:var(--cream-2);line-height:1.7;margin-bottom:18px}
+    .feat-tags{display:flex;gap:8px;flex-wrap:wrap}
+    .feat-tag{
+      font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;
+      background:var(--surface-2);border:1px solid var(--border-2);color:var(--cream-3);
+    }
+    .feat-card.feat-lg .feat-inner{
+      display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center;
+    }
+    .feat-classify-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+    .classify-item{
+      background:var(--surface-2);border:1px solid var(--border);
+      border-radius:10px;padding:12px 14px;
+    }
+    .classify-label{font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px}
+    .ci-star .classify-label{color:#4ADE80}
+    .ci-plow .classify-label{color:#60A5FA}
+    .ci-puzzle .classify-label{color:#FBBF24}
+    .ci-dog .classify-label{color:#FC8181}
+    .classify-desc{font-size:11px;color:var(--cream-3);line-height:1.4}
+
+    /* ── RESULTS BANNER ── */
+    .results-banner{
+      background:linear-gradient(135deg,#1A0D06 0%,#261208 50%,#1E0B0E 100%);
+      border:1px solid rgba(232,180,106,.15);border-radius:24px;
+      padding:60px 5%;text-align:center;position:relative;overflow:hidden;margin:0 5%;
+    }
+    .results-banner::before{
+      content:'';position:absolute;width:500px;height:500px;border-radius:50%;
+      background:radial-gradient(circle,rgba(212,98,42,.1),transparent 70%);
+      left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;
+    }
+    .results-inner{position:relative;z-index:1}
+    .results-num{
+      font-family:'Fraunces',serif;font-size:clamp(52px,8vw,96px);
+      font-weight:700;color:var(--gold);line-height:1;margin-bottom:10px;
+    }
+    .results-label{font-size:16px;color:var(--cream-2);margin-bottom:40px}
+    .results-stats{
+      display:flex;gap:0;justify-content:center;flex-wrap:wrap;
+    }
+    .result-stat{
+      padding:24px 40px;border-right:1px solid var(--border);
+    }
+    .result-stat:last-child{border-right:none}
+    .rs-num{font-family:'Fraunces',serif;font-size:36px;font-weight:700;color:var(--cream);line-height:1;margin-bottom:5px}
+    .rs-label{font-size:12px;color:var(--cream-3);font-weight:600;letter-spacing:.5px}
+
+    /* ── PRICING ── */
+    .pricing-grid{
+      display:grid;grid-template-columns:repeat(4,1fr);
+      gap:16px;margin-top:60px;
+    }
+    .price-why{
+      font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;
+      color:var(--terra);margin-bottom:20px;padding:8px 12px;
+      background:rgba(212,98,42,.08);border:1px solid rgba(212,98,42,.18);
+      border-radius:8px;line-height:1.5;
+    }
+    .price-card.featured .price-why{
+      color:var(--gold);background:rgba(232,180,106,.08);border-color:rgba(232,180,106,.2);
+    }
+    .price-divider{height:1px;background:var(--border);margin:20px 0}
+    .price-features-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--cream-3);margin-bottom:12px}
+    .price-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:36px 30px;position:relative;overflow:hidden;
+      transition:transform .2s,border-color .2s;
+    }
+    .price-card:hover{transform:translateY(-4px)}
+    .price-card.featured{
+      background:linear-gradient(135deg,#1f0e04,#2a1308);
+      border-color:rgba(232,180,106,.3);
+      box-shadow:0 0 0 1px rgba(232,180,106,.1),0 20px 40px rgba(0,0,0,.4);
+    }
+    .price-card.featured::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,var(--terra),var(--gold));
+    }
+    .price-popular{
+      position:absolute;top:18px;right:18px;
+      background:var(--gold);color:#1a0d06;
+      font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;
+      padding:3px 10px;border-radius:20px;
+    }
+    .price-tier{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cream-3);margin-bottom:16px}
+    .price-num{
+      font-family:'Fraunces',serif;font-size:52px;font-weight:700;
+      color:var(--cream);line-height:1;margin-bottom:4px;display:flex;align-items:flex-start;gap:4px;
+    }
+    .price-num sup{font-size:22px;margin-top:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:600}
+    .price-period{font-size:13px;color:var(--cream-3);margin-bottom:28px}
+    .price-desc{font-size:13px;color:var(--cream-2);line-height:1.6;margin-bottom:28px}
+    .price-features{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:32px}
+    .price-features li{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--cream-2)}
+    .price-features li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+    .price-features li.no::before{content:'—';color:var(--cream-3)}
+    .price-features li.no{color:var(--cream-3)}
+    .btn-price{
+      width:100%;padding:13px;border-radius:11px;font-size:14px;font-weight:700;
+      font-family:inherit;cursor:pointer;transition:all .2s;text-decoration:none;
+      display:block;text-align:center;
+    }
+    .btn-price-outline{
+      background:transparent;color:var(--cream-2);border:1px solid var(--border-2);
+    }
+    .btn-price-outline:hover{border-color:rgba(245,237,216,.3);color:var(--cream)}
+    .btn-price-fill{
+      background:linear-gradient(135deg,var(--terra),#E8731A);color:#fff;border:none;
+      box-shadow:0 4px 18px rgba(212,98,42,.35);
+    }
+    .btn-price-fill:hover{transform:translateY(-1px);box-shadow:0 6px 26px rgba(212,98,42,.5)}
+    .billing-toggle-wrap{display:flex;align-items:center;justify-content:center;gap:12px;margin-top:28px}
+    .billing-toggle-label{font-size:14px;font-weight:600;color:rgba(245,237,216,0.45);transition:color .2s}
+    .billing-toggle-label.active{color:var(--cream)}
+    .billing-toggle{position:relative;width:48px;height:26px;cursor:pointer}
+    .billing-toggle input{opacity:0;width:0;height:0}
+    .billing-toggle-slider{position:absolute;inset:0;background:rgba(245,237,216,0.12);border-radius:99px;transition:.2s;border:1px solid rgba(245,237,216,0.15)}
+    .billing-toggle-slider::before{content:'';position:absolute;width:20px;height:20px;left:2px;bottom:2px;background:#F5EDD8;border-radius:50%;transition:.2s}
+    .billing-toggle input:checked+.billing-toggle-slider{background:var(--terra);border-color:var(--terra)}
+    .billing-toggle input:checked+.billing-toggle-slider::before{transform:translateX(22px)}
+    .save-pill{background:rgba(74,222,128,0.15);color:#4ade80;border:1px solid rgba(74,222,128,0.3);font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;transition:opacity .2s}
+    .founding-strip{background:linear-gradient(135deg,rgba(212,98,42,0.12),rgba(232,180,106,0.08));border:1px solid rgba(232,180,106,0.25);border-radius:14px;padding:16px 24px;margin:32px auto 0;max-width:600px;text-align:center}
+    .founding-strip strong{color:#E8B46A;font-size:14px}
+    .founding-strip span{color:rgba(245,237,216,0.5);font-size:13px;display:block;margin-top:4px}
+
+    /* ── TESTIMONIALS CAROUSEL ── */
+    .testi-carousel-wrap{
+      position:relative;overflow:hidden;margin-top:60px;
+      mask-image:linear-gradient(to right,transparent 0%,black 8%,black 92%,transparent 100%);
+      -webkit-mask-image:linear-gradient(to right,transparent 0%,black 8%,black 92%,transparent 100%);
+    }
+    .testi-track{
+      display:flex;gap:20px;width:max-content;
+      animation:scrollLeft 40s linear infinite;
+    }
+    .testi-track:hover{animation-play-state:paused}
+    @keyframes scrollLeft{
+      0%{transform:translateX(0)}
+      100%{transform:translateX(-50%)}
+    }
+    .testi-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:16px;padding:28px;
+      width:340px;flex-shrink:0;
+    }
+    .testi-stars{color:var(--gold);font-size:14px;margin-bottom:14px;letter-spacing:2px}
+    .testi-text{font-size:14px;color:var(--cream-2);line-height:1.7;margin-bottom:20px;font-style:italic}
+    .testi-author{display:flex;align-items:center;gap:12px}
+    .testi-avatar{
+      width:40px;height:40px;border-radius:50%;background:var(--surface-2);
+      border:1px solid var(--border-2);display:flex;align-items:center;
+      justify-content:center;font-size:16px;flex-shrink:0;
+    }
+    .testi-name{font-size:13px;font-weight:700;color:var(--cream)}
+    .testi-role{font-size:11px;color:var(--cream-3);margin-top:2px}
+
+    /* ── FAQ ── */
+    .faq-list{max-width:720px;margin:60px auto 0;display:flex;flex-direction:column;gap:2px}
+    .faq-item{
+      background:var(--surface);border:1px solid var(--border);overflow:hidden;
+    }
+    .faq-item:first-child{border-radius:14px 14px 0 0}
+    .faq-item:last-child{border-radius:0 0 14px 14px}
+    .faq-q{
+      width:100%;background:none;border:none;text-align:left;
+      padding:20px 24px;cursor:pointer;display:flex;align-items:center;
+      justify-content:space-between;gap:12px;transition:background .18s;
+      font-family:'Plus Jakarta Sans',sans-serif;
+    }
+    .faq-q:hover{background:rgba(255,255,255,.03)}
+    .faq-q-text{font-size:14px;font-weight:600;color:var(--cream)}
+    .faq-icon{color:var(--cream-3);flex-shrink:0;transition:transform .25s}
+    .faq-item.open .faq-icon{transform:rotate(45deg)}
+    .faq-a{
+      max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;
+      font-size:13px;color:var(--cream-2);line-height:1.7;padding:0 24px;
+    }
+    .faq-item.open .faq-a{max-height:200px;padding:0 24px 20px}
+
+    /* ── CTA BANNER ── */
+    .cta-banner{
+      margin:0 5% 100px;
+      background:linear-gradient(135deg,#1f0e04 0%,#2a1308 50%,#1e0808 100%);
+      border:1px solid rgba(232,180,106,.18);border-radius:24px;
+      padding:72px 5%;text-align:center;position:relative;overflow:hidden;
+    }
+    .cta-banner::before{
+      content:'';position:absolute;width:600px;height:600px;border-radius:50%;
+      background:radial-gradient(circle,rgba(232,180,106,.07),transparent 70%);
+      left:50%;top:50%;transform:translate(-50%,-50%);pointer-events:none;
+    }
+    .cta-inner{position:relative;z-index:1}
+    .cta-banner h2{
+      font-family:'Fraunces',serif;font-size:clamp(32px,5vw,56px);
+      font-weight:700;color:var(--cream);margin-bottom:14px;line-height:1.15;
+    }
+    .cta-banner h2 em{font-style:italic;color:var(--gold)}
+    .cta-banner p{font-size:16px;color:var(--cream-2);margin-bottom:36px;line-height:1.6}
+    .cta-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+    /* ── FOOTER ── */
+    footer{
+      border-top:1px solid var(--border);padding:40px 5%;
+      display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px;
+    }
+    .footer-brand{display:flex;align-items:center;gap:7px}
+    .footer-logo{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--cream);letter-spacing:3px}
+    .footer-links{display:flex;gap:24px;flex-wrap:wrap}
+    .footer-link{font-size:13px;color:var(--cream-3);text-decoration:none;transition:color .18s}
+    .footer-link:hover{color:var(--cream)}
+    .footer-copy{font-size:12px;color:var(--cream-3)}
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:900px){
+      .how-grid{grid-template-columns:1fr}
+      .features-grid{grid-template-columns:1fr}
+      .feat-card.feat-lg .feat-inner{grid-template-columns:1fr}
+      .pricing-grid{grid-template-columns:1fr 1fr}
+    }
+    @media(max-width:640px){
+      .pricing-grid{grid-template-columns:1fr}
+      .testi-card{width:280px}
+      .mock-body{grid-template-columns:1fr 1fr}
+      .results-stats{flex-direction:column;align-items:center}
+      .result-stat{border-right:none;border-bottom:1px solid var(--border);width:100%;max-width:240px;text-align:center}
+      .result-stat:last-child{border-bottom:none}
+    }
+    @media(max-width:600px){
+      nav{padding:0 20px}
+      .nav-links .nav-link{display:none}
+      .hero h1{font-size:36px}
+      .mock-body{grid-template-columns:1fr}
+    }
+
+    /* ── ANIMATIONS ── */
+    .fade-up{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
+    .fade-up.visible{opacity:1;transform:translateY(0)}
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-brand">
+    <span class="nav-logo">MENUEDGE</span>
+    <div class="nav-dot"></div>
+  </a>
+  <div class="nav-links">
+    <a href="#how" class="nav-link">How it works</a>
+    <a href="#features" class="nav-link">Features</a>
+    <a href="#pricing" class="nav-link">Pricing</a>
+    {% if logged_in %}
+    <a href="/dashboard" class="btn-cta-sm">
+      Dashboard
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+    {% else %}
+    <a href="/login" class="nav-link">Sign in</a>
+    <a href="/signup" class="btn-cta-sm">
+      Start Free
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+    {% endif %}
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-glow"></div>
+  <div class="hero-eyebrow">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+    AI-Powered Menu Engineering
+  </div>
+  <h1>Your menu is leaving<br><em>money on the table.</em><br><span>We'll show you where.</span></h1>
+  <p class="hero-sub">Upload a photo of your menu. In minutes, MenuEdge tells you which dishes to keep, reprice, redesign — and exactly how much revenue you're missing.</p>
+  <div class="hero-actions">
+    <a href="/signup" class="btn-hero">
+      Analyse My Menu Free
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+    </a>
+    <a href="#how" class="btn-hero-ghost">
+      See how it works
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+    </a>
+  </div>
+  <div class="hero-trust">
+    <div class="trust-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      No credit card required
+    </div>
+    <div class="trust-dot"></div>
+    <div class="trust-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Results in under 60 seconds
+    </div>
+    <div class="trust-dot"></div>
+    <div class="trust-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Works with any menu format
+    </div>
+  </div>
+
+  <!-- Mock dashboard preview -->
+  <div class="hero-visual fade-up">
+    <div class="mock-frame">
+      <div class="mock-bar">
+        <div class="mock-dot" style="background:#FC8181"></div>
+        <div class="mock-dot" style="background:#FBBF24;margin-left:2px"></div>
+        <div class="mock-dot" style="background:#4ADE80;margin-left:2px"></div>
+        <div class="mock-url">menuedge.app/dashboard</div>
+      </div>
+      <div class="mock-body">
+        <div class="mock-hero-card">
+          <div>
+            <div class="mock-tag">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+              Estimated Monthly Uplift
+            </div>
+            <div class="mock-uplift-num">$1,200 – $2,400/month</div>
+            <div class="mock-uplift-insight">Repricing 3 underpriced dishes and removing 2 low-margin items could yield significant margin improvement.</div>
+          </div>
+        </div>
+        <div class="mock-card mc-green">
+          <div class="mock-card-label">Stars</div>
+          <div class="mock-card-num">8</div>
+          <div class="mock-card-desc">High profit · High popularity</div>
+        </div>
+        <div class="mock-card mc-blue">
+          <div class="mock-card-label">Plowhorses</div>
+          <div class="mock-card-num">5</div>
+          <div class="mock-card-desc">Popular but low margin</div>
+        </div>
+        <div class="mock-card mc-amber">
+          <div class="mock-card-label">Puzzles</div>
+          <div class="mock-card-num">4</div>
+          <div class="mock-card-desc">High margin, low visibility</div>
+        </div>
+        <div class="mock-card mc-red">
+          <div class="mock-card-label">Dogs</div>
+          <div class="mock-card-num">3</div>
+          <div class="mock-card-desc">Low margin, low popularity</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section id="how" style="background:var(--surface);position:relative;z-index:0;-webkit-mask-image:linear-gradient(to right,transparent 0%,black 7%,black 93%,transparent 100%);mask-image:linear-gradient(to right,transparent 0%,black 7%,black 93%,transparent 100%)">
+  <div class="text-center fade-up">
+    <div class="section-eyebrow">How it works</div>
+    <h2 class="section-title">From photo to profit plan<br><em>in three steps</em></h2>
+    <p class="section-sub">No complex setup. No consultants. Just upload your menu and let the AI do the work.</p>
+  </div>
+  <div class="how-grid fade-up">
+    <div class="how-step">
+      <div class="step-num">1</div>
+      <div class="step-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+      </div>
+      <div class="step-title">Photograph your menu</div>
+      <p class="step-desc">Take a photo of your menu — printed, laminated, chalkboard, PDF. MenuEdge reads it all. Our AI extracts every dish, price, and category automatically.</p>
+    </div>
+    <div class="how-step">
+      <div class="step-num">2</div>
+      <div class="step-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+        </svg>
+      </div>
+      <div class="step-title">Add your sales data (optional)</div>
+      <p class="step-desc">Drop in a CSV or Excel export from your POS system. With real sales data, analysis shifts from AI estimates to hard-number accuracy.</p>
+    </div>
+    <div class="how-step">
+      <div class="step-num">3</div>
+      <div class="step-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="8" y1="13" x2="16" y2="13"/>
+          <line x1="8" y1="17" x2="16" y2="17"/>
+          <line x1="8" y1="9" x2="10" y2="9"/>
+        </svg>
+      </div>
+      <div class="step-title">Get your action plan</div>
+      <p class="step-desc">Receive a full menu engineering report — dish classifications, pricing recommendations, rewritten descriptions, and estimated monthly revenue uplift.</p>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="fade-up">
+    <div class="section-eyebrow">Features</div>
+    <h2 class="section-title">Everything your menu consultant<br>charges <em>thousands</em> for</h2>
+    <p class="section-sub">MenuEdge gives independent restaurants access to the same rigorous menu engineering methodology used by major chains.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feat-card feat-lg fade-up">
+      <div class="feat-inner">
+        <div>
+          <div class="feat-icon feat-icon-gold">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#E8B46A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="2"/>
+              <rect x="14" y="3" width="7" height="7" rx="2"/>
+              <rect x="3" y="14" width="7" height="7" rx="2"/>
+              <path d="M14 17.5h7M17.5 14v7"/>
+            </svg>
+          </div>
+          <div class="feat-title">Menu Engineering Matrix</div>
+          <p class="feat-desc">Every dish is classified using the proven Stars / Plowhorses / Puzzles / Dogs framework — the same methodology taught at Cornell's School of Hotel Administration. Know exactly what to promote, reprice, and remove.</p>
+          <div class="feat-tags">
+            <span class="feat-tag">Stars — keep & promote</span>
+            <span class="feat-tag">Puzzles — boost visibility</span>
+            <span class="feat-tag">Plowhorses — reprice</span>
+            <span class="feat-tag">Dogs — redesign or cut</span>
+          </div>
+        </div>
+        <div class="feat-classify-grid">
+          <div class="classify-item ci-star">
+            <div class="classify-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="#E8B46A" stroke="#E8B46A" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;vertical-align:middle;margin-right:5px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Star</div>
+            <div class="classify-desc">High popularity, high margin. Keep visible and promote actively.</div>
+          </div>
+          <div class="classify-item ci-plow">
+            <div class="classify-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" style="width:10px;height:10px;vertical-align:middle;margin-right:5px"><circle cx="5" cy="5" r="5" fill="#60A5FA"/></svg> Plowhorse</div>
+            <div class="classify-desc">Guests love it, but margin is thin. Bundle or reprice.</div>
+          </div>
+          <div class="classify-item ci-puzzle">
+            <div class="classify-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" style="width:10px;height:10px;vertical-align:middle;margin-right:5px"><circle cx="5" cy="5" r="5" fill="#FBBF24"/></svg> Puzzle</div>
+            <div class="classify-desc">Great margin, low orders. Rename, rewrite, reposition.</div>
+          </div>
+          <div class="classify-item ci-dog">
+            <div class="classify-label"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10" style="width:10px;height:10px;vertical-align:middle;margin-right:5px"><circle cx="5" cy="5" r="5" fill="#FC8181"/></svg> Dog</div>
+            <div class="classify-desc">Low popularity, low margin. Redesign or remove entirely.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon feat-icon-red">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgba(252,129,129,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.35-4.35"/>
+          <path d="M11 8v3M11 14h.01"/>
+        </svg>
+      </div>
+      <div class="feat-title">Dish Underperformance Diagnostics</div>
+      <p class="feat-desc">Click "Why?" on any underperforming dish to get a deep AI diagnosis — root causes, specific fixes, a rewritten name and description, and an honest verdict on whether it's worth saving.</p>
+      <div class="feat-tags">
+        <span class="feat-tag">Root cause analysis</span>
+        <span class="feat-tag">Description rewrites</span>
+        <span class="feat-tag">Repricing guidance</span>
+      </div>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon feat-icon-purple">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 17 8 11 13 14 21 5"/>
+          <path d="M17 5h4v4"/>
+        </svg>
+      </div>
+      <div class="feat-title">Trend Opportunities</div>
+      <p class="feat-desc">See which dishes are trending right now in your cuisine style that you don't yet offer. Each suggestion comes with trend strength, ease of execution, target demographic, and price range.</p>
+      <div class="feat-tags">
+        <span class="feat-tag">Hot / Rising / Emerging</span>
+        <span class="feat-tag">Add cost estimate</span>
+        <span class="feat-tag">Quick win callout</span>
+      </div>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon feat-icon-green">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#4ADE80" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="12" y1="18" x2="12" y2="12"/>
+          <polyline points="9 15 12 18 15 15"/>
+        </svg>
+      </div>
+      <div class="feat-title">Downloadable PDF Report</div>
+      <p class="feat-desc">Every analysis generates a full branded PDF report you can share with your head chef, business partner, or investors. Professional, print-ready, and yours to keep.</p>
+      <div class="feat-tags">
+        <span class="feat-tag">Print ready</span>
+        <span class="feat-tag">Shareable</span>
+        <span class="feat-tag">Full dish breakdown</span>
+      </div>
+    </div>
+    <div class="feat-card fade-up">
+      <div class="feat-icon feat-icon-blue">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgba(96,165,250,0.9)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/>
+          <line x1="7" y1="7" x2="7.01" y2="7"/>
+          <line x1="16" y1="6" x2="16" y2="10"/>
+          <polyline points="14 8 16 6 18 8"/>
+        </svg>
+      </div>
+      <div class="feat-title">Pricing Gap Analysis</div>
+      <p class="feat-desc">See exactly where your prices diverge from perceived value — dish by dish. MenuEdge flags every item that is over or underpriced relative to its category, position on the menu, and customer expectation at your price point.</p>
+      <div class="feat-tags">
+        <span class="feat-tag">Per-dish breakdown</span>
+        <span class="feat-tag">Anchor detection</span>
+        <span class="feat-tag">Revenue opportunity</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- RESULTS BANNER -->
+<section style="padding:80px 0;background:var(--bg);position:relative;z-index:0">
+  <div class="results-banner fade-up">
+    <div class="results-inner">
+      <div class="results-num">+$1,200</div>
+      <p class="results-label">Average estimated monthly uplift identified per menu analysis</p>
+      <div class="results-stats">
+        <div class="result-stat">
+          <div class="rs-num">60s</div>
+          <div class="rs-label">Time to first insight</div>
+        </div>
+        <div class="result-stat">
+          <div class="rs-num">Any</div>
+          <div class="rs-label">Menu format supported</div>
+        </div>
+        <div class="result-stat">
+          <div class="rs-num">100%</div>
+          <div class="rs-label">AI-powered, no consultant needed</div>
+        </div>
+        <div class="result-stat">
+          <div class="rs-num">PDF</div>
+          <div class="rs-label">Shareable report included</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section>
+  <div class="text-center fade-up">
+    <div class="section-eyebrow">What restaurants say</div>
+    <h2 class="section-title">Real results from real<br><em>restaurant owners</em></h2>
+  </div>
+  <div class="testi-carousel-wrap">
+    <div class="testi-track">
+      <!-- Original set -->
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"MenuEdge spotted that our French Onion Soup was dramatically underpriced at $5. We moved it to $8 and no one batted an eyelid. That's an extra $360/month from one dish."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👨‍🍳</div>
+          <div>
+            <div class="testi-name">James O.</div>
+            <div class="testi-role">Owner, The Copper Pot — London</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I always knew some dishes weren't pulling their weight but I couldn't tell you which ones or why. MenuEdge gave me a diagnosis in 60 seconds that would've taken a consultant a week."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👩‍🍳</div>
+          <div>
+            <div class="testi-name">Priya M.</div>
+            <div class="testi-role">Head Chef, Spice Garden — Manchester</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"The trend suggestions feature is underrated. We added a birria taco to our Mexican menu after MenuEdge flagged it as 'Hot' — it's now our second best seller within a month."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🧑‍🍳</div>
+          <div>
+            <div class="testi-name">Carlos R.</div>
+            <div class="testi-role">Owner, Casa Bonita — Birmingham</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"We cut 6 underperforming dishes based on the report and replaced them with two high-margin specials. Our average cover spend went up by $9 in the first month."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👨‍🍳</div>
+          <div>
+            <div class="testi-name">Daniel F.</div>
+            <div class="testi-role">Owner, Fern & Fork — Edinburgh</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I sent the PDF to my business partner and we finally had a proper conversation about the menu based on data, not opinions. That alone was worth it."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👩‍🍳</div>
+          <div>
+            <div class="testi-name">Amara T.</div>
+            <div class="testi-role">Co-owner, Saffron House — Bristol</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Took me 4 minutes to upload and get the report. The pricing gap analysis alone flagged $2,200 in monthly revenue we were leaving on the table. Unreal."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🧑‍🍳</div>
+          <div>
+            <div class="testi-name">Marcus W.</div>
+            <div class="testi-role">Head Chef, The Salt Room — Brighton</div>
+          </div>
+        </div>
+      </div>
+      <!-- Duplicate set for seamless loop -->
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"MenuEdge spotted that our French Onion Soup was dramatically underpriced at $5. We moved it to $8 and no one batted an eyelid. That's an extra $360/month from one dish."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👨‍🍳</div>
+          <div>
+            <div class="testi-name">James O.</div>
+            <div class="testi-role">Owner, The Copper Pot — London</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I always knew some dishes weren't pulling their weight but I couldn't tell you which ones or why. MenuEdge gave me a diagnosis in 60 seconds that would've taken a consultant a week."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👩‍🍳</div>
+          <div>
+            <div class="testi-name">Priya M.</div>
+            <div class="testi-role">Head Chef, Spice Garden — Manchester</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"The trend suggestions feature is underrated. We added a birria taco to our Mexican menu after MenuEdge flagged it as 'Hot' — it's now our second best seller within a month."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🧑‍🍳</div>
+          <div>
+            <div class="testi-name">Carlos R.</div>
+            <div class="testi-role">Owner, Casa Bonita — Birmingham</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"We cut 6 underperforming dishes based on the report and replaced them with two high-margin specials. Our average cover spend went up by $9 in the first month."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👨‍🍳</div>
+          <div>
+            <div class="testi-name">Daniel F.</div>
+            <div class="testi-role">Owner, Fern & Fork — Edinburgh</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"I sent the PDF to my business partner and we finally had a proper conversation about the menu based on data, not opinions. That alone was worth it."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">👩‍🍳</div>
+          <div>
+            <div class="testi-name">Amara T.</div>
+            <div class="testi-role">Co-owner, Saffron House — Bristol</div>
+          </div>
+        </div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Took me 4 minutes to upload and get the report. The pricing gap analysis alone flagged $2,200 in monthly revenue we were leaving on the table. Unreal."</p>
+        <div class="testi-author">
+          <div class="testi-avatar">🧑‍🍳</div>
+          <div>
+            <div class="testi-name">Marcus W.</div>
+            <div class="testi-role">Head Chef, The Salt Room — Brighton</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section id="pricing" style="background:var(--surface);position:relative;z-index:0;-webkit-mask-image:linear-gradient(to right,transparent 0%,black 7%,black 93%,transparent 100%);mask-image:linear-gradient(to right,transparent 0%,black 7%,black 93%,transparent 100%)">
+  <div class="text-center fade-up">
+    <div class="section-eyebrow">Pricing</div>
+    <h2 class="section-title">Pay for results,<br><em>not software.</em></h2>
+    <p class="section-sub">No contracts. Cancel anytime. Upgrade only when the value is obvious.</p>
+
+    <!-- Monthly / Annual toggle -->
+    <div class="billing-toggle-wrap">
+      <span class="billing-toggle-label active" id="lp-lbl-mo">Monthly</span>
+      <label class="billing-toggle">
+        <input type="checkbox" id="lp-billing-toggle" onchange="lpSwitchBilling(this.checked)"/>
+        <span class="billing-toggle-slider"></span>
+      </label>
+      <span class="billing-toggle-label" id="lp-lbl-yr">Annual</span>
+      <span class="save-pill" id="lp-save-pill" style="opacity:0">Save 2 months</span>
+    </div>
+
+    <!-- Founding member strip -->
+    <div class="founding-strip fade-up">
+      <strong>🎯 Founding Member Offer — Lock in 33% off, forever</strong>
+      <span>First 50 customers get permanent discounted pricing &nbsp;·&nbsp; 47 spots remaining</span>
+    </div>
+  </div>
+
+  <div class="pricing-grid">
+
+    <!-- STARTER -->
+    <div class="price-card fade-up">
+      <div class="price-tier">Starter</div>
+      <div class="price-num" id="lp-price-starter"><sup>$</sup>29</div>
+      <div class="price-period" id="lp-period-starter">per month · billed monthly</div>
+      <div class="price-divider"></div>
+      <div class="price-features-label">What's included</div>
+      <ul class="price-features">
+        <li>Optimise 10 dishes per month</li>
+        <li>Stars / Dogs / Puzzles / Plowhorses classification</li>
+        <li>Basic PDF report</li>
+        <li class="no">Pricing gap analysis</li>
+        <li class="no">Dish diagnostic insights</li>
+        <li class="no">Trend opportunities</li>
+        <li class="no">POS / sales data upload</li>
+        <li class="no">Priority support</li>
+      </ul>
+      <a id="lp-btn-starter" href="/signup" class="btn-price btn-price-outline">Start 7-day free trial</a>
+    </div>
+
+    <!-- PRO -->
+    <div class="price-card featured fade-up">
+      <div class="price-popular">Most Popular</div>
+      <div class="price-tier">Pro</div>
+      <div class="price-num" id="lp-price-pro"><sup>$</sup>79</div>
+      <div class="price-period" id="lp-period-pro">per month · billed monthly</div>
+      <div class="price-divider"></div>
+      <div class="price-features-label">Everything in Starter, plus</div>
+      <ul class="price-features">
+        <li>Optimise unlimited dishes per month</li>
+        <li>Pricing gap analysis (dish by dish)</li>
+        <li>Dish diagnostic insights — Why is it underperforming?</li>
+        <li>Trend opportunities report</li>
+        <li>Rewritten dish descriptions</li>
+        <li>POS / sales data upload (CSV, Excel)</li>
+        <li class="no">Multi-location dashboard</li>
+        <li class="no">White-label reports</li>
+      </ul>
+      <a id="lp-btn-pro" href="/signup" class="btn-price btn-price-fill">Start 7-day free trial</a>
+    </div>
+
+    <!-- PREMIUM -->
+    <div class="price-card fade-up">
+      <div class="price-tier">Premium</div>
+      <div class="price-num" id="lp-price-premium"><sup>$</sup>149</div>
+      <div class="price-period" id="lp-period-premium">per month · billed monthly</div>
+      <div class="price-divider"></div>
+      <div class="price-features-label">Everything in Pro, plus</div>
+      <ul class="price-features">
+        <li>Optimise unlimited dishes per month</li>
+        <li>Competitor trend benchmarking</li>
+        <li>Advanced seasonal menu planning</li>
+        <li>White-label branded PDF reports</li>
+        <li>Revenue uplift modelling</li>
+        <li>Priority email support (24h)</li>
+        <li class="no">Multi-location dashboard</li>
+        <li class="no">Dedicated account manager</li>
+      </ul>
+      <a id="lp-btn-premium" href="/signup" class="btn-price btn-price-outline">Start 7-day free trial</a>
+    </div>
+
+    <!-- ENTERPRISE -->
+    <div class="price-card fade-up">
+      <div class="price-tier">Enterprise</div>
+      <div class="price-num" style="font-size:38px;padding-top:6px">Custom</div>
+      <div class="price-period">Multiple locations · volume pricing</div>
+      <div class="price-divider"></div>
+      <div class="price-features-label">Everything in Premium, plus</div>
+      <ul class="price-features">
+        <li>Unlimited locations &amp; dishes</li>
+        <li>Multi-location unified dashboard</li>
+        <li>Cross-location benchmarking</li>
+        <li>Dedicated account manager</li>
+        <li>Custom integrations (POS, ERP)</li>
+        <li>Staff training &amp; onboarding</li>
+        <li>SLA-backed support</li>
+        <li>Custom contract &amp; invoicing</li>
+      </ul>
+      <a href="mailto:hello@menuedge.app" class="btn-price btn-price-outline">Talk to us</a>
+    </div>
+
+  </div>
+
+  <script>
+  function lpSwitchBilling(isAnnual) {
+    const prices = {
+      starter: {mo:'<sup>$</sup>29', yr:'<sup>$</sup>24'},
+      pro:     {mo:'<sup>$</sup>79', yr:'<sup>$</sup>65'},
+      premium: {mo:'<sup>$</sup>149',yr:'<sup>$</sup>124'}
+    };
+    const periods = {
+      starter: {mo:'per month · billed monthly', yr:'per month · $290 billed annually'},
+      pro:     {mo:'per month · billed monthly', yr:'per month · $790 billed annually'},
+      premium: {mo:'per month · billed monthly', yr:'per month · $1,490 billed annually'}
+    };
+    ['starter','pro','premium'].forEach(p => {
+      document.getElementById('lp-price-'+p).innerHTML = isAnnual ? prices[p].yr : prices[p].mo;
+      document.getElementById('lp-period-'+p).textContent = isAnnual ? periods[p].yr : periods[p].mo;
+    });
+    document.getElementById('lp-lbl-mo').classList.toggle('active', !isAnnual);
+    document.getElementById('lp-lbl-yr').classList.toggle('active', isAnnual);
+    document.getElementById('lp-save-pill').style.opacity = isAnnual ? '1' : '0';
+  }
+  </script>
+</section>
+
+<div class="divider"></div>
+
+<!-- FAQ -->
+<section>
+  <div class="text-center fade-up">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-title">Common <em>questions</em></h2>
+  </div>
+  <div class="faq-list fade-up">
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">What types of menus does MenuEdge support?</span>
+        <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-a">Any format — printed menus, laminated menus, chalkboards, digital PDFs, and handwritten menus. As long as the photo is reasonably clear, MenuEdge can extract all items. Multiple pages are also supported via PDF upload.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">Do I need to upload sales data?</span>
+        <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-a">No — MenuEdge works without sales data by estimating dish popularity using AI. If you upload a CSV or Excel export from your POS (Square, Toast, etc.), the analysis upgrades to real-number accuracy and becomes significantly more precise.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">How is this different from hiring a menu consultant?</span>
+        <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-a">Menu consultants typically charge $2,000–$5,000 for a single analysis and take 2–4 weeks. MenuEdge delivers the same menu engineering methodology in under 60 seconds for a fraction of the cost. You also get unlimited re-analyses as your menu evolves.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">What currency does MenuEdge support?</span>
+        <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-a">MenuEdge uses USD ($) consistently throughout all analyses, reports, and recommendations.</div>
+    </div>
+    <div class="faq-item">
+      <button class="faq-q" onclick="toggleFaq(this)">
+        <span class="faq-q-text">Is my data safe?</span>
+        <svg class="faq-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+      <div class="faq-a">Yes. Your menu images and sales data are processed securely and never shared with other users or third parties. Each account's data is fully isolated in its own database partition.</div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BANNER -->
+<div class="cta-banner fade-up">
+  <div class="cta-inner">
+    <h2>Your most profitable menu<br>is one analysis <em>away.</em></h2>
+    <p>Join restaurant owners who've already discovered thousands in hidden monthly revenue.</p>
+    <div class="cta-actions">
+      <a href="/signup" class="btn-hero">
+        Analyse My Menu Free
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </a>
+      <a href="/login" class="btn-hero-ghost">I already have an account</a>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <span class="footer-logo">MENUEDGE</span>
+    <div class="nav-dot"></div>
+  </div>
+  <div class="footer-links">
+    <a href="#how" class="footer-link">How it works</a>
+    <a href="#features" class="footer-link">Features</a>
+    <a href="#pricing" class="footer-link">Pricing</a>
+    <a href="/login" class="footer-link">Sign in</a>
+    <a href="/signup" class="footer-link">Sign up</a>
+  </div>
+  <div class="footer-copy">© 2026 MenuEdge. All rights reserved.</div>
+</footer>
+
+<script>
+// FAQ toggle
+function toggleFaq(btn){
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(el => el.classList.remove('open'));
+  if(!isOpen) item.classList.add('open');
+}
+
+// Scroll animations
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

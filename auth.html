@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MenuEdge — Sign In</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0D0B09;
+      --surface:#161412;
+      --surface-2:#1E1A16;
+      --gold:#E8B46A;
+      --gold-pale:rgba(232,180,106,0.1);
+      --gold-border:rgba(232,180,106,0.22);
+      --terra:#D4622A;
+      --terra-glow:rgba(212,98,42,0.35);
+      --cream:#F5EDD8;
+      --cream-2:rgba(245,237,216,0.62);
+      --cream-3:rgba(245,237,216,0.32);
+      --border:rgba(245,237,216,0.07);
+      --border-2:rgba(245,237,216,0.13);
+    }
+    html,body{min-height:100%}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--cream);display:flex;min-height:100vh}
+
+    /* ── AURORA BACKGROUND ── */
+    .aurora{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+    .blob{position:absolute;border-radius:50%;filter:blur(130px);will-change:transform}
+    .b1{width:700px;height:700px;background:radial-gradient(circle,#D4622A,transparent 70%);opacity:.22;top:-200px;left:-150px;animation:drift1 22s ease-in-out infinite alternate}
+    .b2{width:550px;height:550px;background:radial-gradient(circle,#E8B46A,transparent 70%);opacity:.16;top:20%;right:-180px;animation:drift2 28s ease-in-out infinite alternate}
+    .b3{width:450px;height:450px;background:radial-gradient(circle,#7C2D12,transparent 70%);opacity:.18;bottom:-100px;left:35%;animation:drift3 24s ease-in-out infinite alternate}
+    @keyframes drift1{0%{transform:translate(0,0)}100%{transform:translate(60px,-40px) scale(1.08)}}
+    @keyframes drift2{0%{transform:translate(0,0) scale(1)}100%{transform:translate(-40px,50px) scale(.92)}}
+    @keyframes drift3{0%{transform:translate(0,0)}100%{transform:translate(30px,-60px) scale(1.06)}}
+
+    /* Noise overlay */
+    .noise{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+    /* ── LEFT PANEL ── */
+    .left{
+      position:relative;z-index:10;width:55%;min-height:100vh;
+      display:flex;flex-direction:column;justify-content:space-between;
+      padding:52px 64px;
+      background:linear-gradient(155deg,#271007 0%,#271007 42%,#0D0B09 58%,#0D0B09 100%);
+    }
+    .left::after{
+      content:'';position:absolute;inset:0;pointer-events:none;
+      background:linear-gradient(155deg,rgba(212,98,42,.06) 0%,transparent 50%);
+    }
+
+    .brand{display:flex;align-items:center;gap:10px}
+    .brand-name{
+      font-family:'Fraunces',serif;font-size:21px;font-weight:700;
+      color:var(--cream);letter-spacing:3.5px;
+    }
+    .brand-mark{
+      width:7px;height:7px;background:var(--terra);border-radius:50%;
+      box-shadow:0 0 14px var(--terra-glow);
+      animation:pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse{0%,100%{box-shadow:0 0 10px var(--terra-glow)}50%{box-shadow:0 0 22px var(--terra-glow),0 0 40px rgba(212,98,42,.15)}}
+
+    .left-mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:44px 0}
+    .eyebrow{
+      display:inline-flex;align-items:center;gap:10px;
+      font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
+      color:var(--gold);margin-bottom:26px;
+    }
+    .eyebrow-line{width:28px;height:1px;background:var(--gold);opacity:.5}
+
+    h1.hl{
+      font-family:'Fraunces',serif;
+      font-size:clamp(38px,3.8vw,60px);
+      font-weight:600;line-height:1.08;
+      color:var(--cream);margin-bottom:22px;
+    }
+    h1.hl em{font-style:italic;color:var(--gold)}
+
+    .sub{
+      font-size:15px;color:var(--cream-2);
+      line-height:1.78;max-width:390px;margin-bottom:52px;
+    }
+
+    .feats{display:flex;flex-direction:column;gap:18px}
+    .feat{display:flex;align-items:center;gap:18px;cursor:default}
+    .feat-ico{
+      width:46px;height:46px;border-radius:14px;flex-shrink:0;
+      background:rgba(255,255,255,.04);border:1px solid var(--border-2);
+      display:flex;align-items:center;justify-content:center;color:var(--gold);
+      transition:background .25s,border-color .25s;
+    }
+    .feat:hover .feat-ico{background:rgba(232,180,106,.12);border-color:rgba(232,180,106,.3)}
+    .feat-txt{font-size:14px;color:var(--cream-2);line-height:1.4}
+    .feat-txt strong{color:var(--cream);font-weight:600;display:block;margin-bottom:2px;font-size:14px}
+
+    .stats{display:flex;gap:14px;flex-wrap:wrap}
+    .stat-pill{
+      background:rgba(255,255,255,.04);border:1px solid var(--border);
+      border-radius:14px;padding:16px 22px;
+      transition:border-color .22s;
+    }
+    .stat-pill:hover{border-color:var(--gold-border)}
+    .sp-v{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--gold);line-height:1}
+    .sp-l{font-size:11px;color:var(--cream-3);margin-top:5px;text-transform:uppercase;letter-spacing:.7px}
+
+    /* ── DIVIDER ── */
+    .vdiv{position:relative;z-index:10;width:1px;background:var(--border);flex-shrink:0;align-self:stretch}
+
+    /* ── RIGHT PANEL ── */
+    .right{
+      position:relative;z-index:10;width:45%;min-height:100vh;
+      display:flex;align-items:center;justify-content:center;
+      padding:60px 52px;overflow-y:auto;
+    }
+    .form-box{width:100%;max-width:400px}
+
+    .glass-card{
+      background:rgba(22,20,18,0.72);
+      backdrop-filter:blur(28px);-webkit-backdrop-filter:blur(28px);
+      border:1px solid var(--border-2);
+      border-radius:24px;
+      padding:38px 34px;
+    }
+
+    .form-ew{
+      display:flex;align-items:center;gap:8px;
+      font-size:11px;font-weight:700;letter-spacing:1.8px;
+      text-transform:uppercase;color:var(--terra);margin-bottom:12px;
+    }
+    .form-ew-dot{width:5px;height:5px;background:var(--terra);border-radius:50%;box-shadow:0 0 8px var(--terra-glow)}
+    .form-title{font-family:'Fraunces',serif;font-size:28px;font-weight:600;color:var(--cream);margin-bottom:6px}
+    .form-sub{font-size:14px;color:var(--cream-2);margin-bottom:26px;line-height:1.6}
+
+    .tabs{
+      display:flex;background:rgba(255,255,255,.04);
+      border:1px solid var(--border);border-radius:12px;
+      padding:4px;margin-bottom:26px;gap:4px;
+    }
+    .tab{
+      flex:1;padding:9px 12px;text-align:center;font-size:13px;font-weight:600;
+      cursor:pointer;background:transparent;border:none;color:var(--cream-3);
+      border-radius:8px;transition:all .22s;font-family:'Plus Jakarta Sans',sans-serif;
+    }
+    .tab.active{background:rgba(255,255,255,.09);color:var(--cream);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+
+    .field{margin-bottom:15px}
+    .field label{display:block;font-size:12px;font-weight:600;color:var(--cream-2);margin-bottom:7px;letter-spacing:.2px}
+    .iw{position:relative;display:flex;align-items:center}
+    .ii{position:absolute;left:13px;color:var(--cream-3);width:16px;height:16px;flex-shrink:0;pointer-events:none}
+    .field input{
+      width:100%;padding:12px 14px 12px 42px;
+      background:rgba(255,255,255,.05);
+      border:1px solid var(--border-2);border-radius:11px;
+      font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;
+      color:var(--cream);outline:none;transition:all .2s;
+    }
+    .field input:focus{
+      border-color:rgba(232,180,106,.45);background:rgba(255,255,255,.08);
+      box-shadow:0 0 0 3px rgba(232,180,106,.07);
+    }
+    .field input::placeholder{color:var(--cream-3)}
+
+    .btn-cta{
+      width:100%;padding:13px;border:none;border-radius:11px;
+      font-size:15px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
+      cursor:pointer;letter-spacing:.2px;
+      background:linear-gradient(135deg,var(--terra) 0%,#E8731A 100%);
+      color:#fff;transition:transform .2s,box-shadow .2s;
+      box-shadow:0 4px 24px rgba(212,98,42,.32);
+      position:relative;overflow:hidden;
+    }
+    .btn-cta::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.18) 50%,transparent 100%);
+      transform:translateX(-100%);transition:none;
+    }
+    .btn-cta:hover{transform:translateY(-1px);box-shadow:0 6px 32px rgba(212,98,42,.48)}
+    .btn-cta:hover::after{animation:shimmer .75s ease-in-out}
+    .btn-cta:active{transform:translateY(0)}
+    @keyframes shimmer{to{transform:translateX(100%)}}
+
+    .error-msg{
+      background:rgba(212,98,42,.1);border:1px solid rgba(212,98,42,.22);
+      color:#FDBA74;border-radius:9px;padding:10px 14px;font-size:13px;
+      margin-bottom:14px;display:flex;align-items:center;gap:8px;
+    }
+    .privacy{margin-top:18px;font-size:12px;color:var(--cream-3);text-align:center;line-height:1.6}
+    .lock-ico{color:var(--cream-3);width:12px;height:12px;vertical-align:middle;margin-right:4px}
+
+    /* ── ENTRANCE ANIMATIONS ── */
+    .left-mid{animation:fadeUp .65s cubic-bezier(.22,1,.36,1) .1s both}
+    .stats{animation:fadeUp .65s cubic-bezier(.22,1,.36,1) .2s both}
+    .form-box{animation:fadeUp .55s cubic-bezier(.22,1,.36,1) .15s both}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:768px){.left{display:none}.vdiv{display:none}.right{width:100%}.glass-card{border:none;background:transparent;backdrop-filter:none;padding:20px 0}}
+  </style>
+</head>
+<body>
+<div class="aurora">
+  <div class="blob b1"></div>
+  <div class="blob b2"></div>
+  <div class="blob b3"></div>
+</div>
+<div class="noise"></div>
+
+<!-- LEFT -->
+<div class="left">
+  <div class="brand">
+    <span class="brand-name">MENUEDGE</span>
+    <div class="brand-mark"></div>
+  </div>
+
+  <div class="left-mid">
+    <div class="eyebrow"><div class="eyebrow-line"></div>AI Menu Engineer</div>
+    <h1 class="hl">Your menu is<br>leaving money<br><em>on the table.</em></h1>
+    <p class="sub">Upload a photo. Connect your POS. Get AI-powered pricing, positioning, and description rewrites in under 60 seconds.</p>
+    <div class="feats">
+      <div class="feat">
+        <div class="feat-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="feat-txt"><strong>Menu Engineering Matrix</strong>Stars, Plowhorses &amp; Dogs classified automatically</div>
+      </div>
+      <div class="feat">
+        <div class="feat-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+        </div>
+        <div class="feat-txt"><strong>Real POS Data</strong>Connect Square, Toast, or upload a CSV export</div>
+      </div>
+      <div class="feat">
+        <div class="feat-ico">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="feat-txt"><strong>Instant PDF Report</strong>Professional, client-ready analysis in seconds</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-pill"><div class="sp-v">+$1,800</div><div class="sp-l">Avg monthly uplift</div></div>
+    <div class="stat-pill"><div class="sp-v">60s</div><div class="sp-l">Analysis time</div></div>
+    <div class="stat-pill"><div class="sp-v">4× ROI</div><div class="sp-l">First month</div></div>
+  </div>
+</div>
+
+<div class="vdiv"></div>
+
+<!-- RIGHT -->
+<div class="right">
+  <div class="form-box">
+    {% if mode in ['login', 'signup'] %}
+    <div class="glass-card">
+      <div class="form-ew"><div class="form-ew-dot"></div>Restaurant Dashboard</div>
+      <h2 class="form-title" id="form-title">Welcome back</h2>
+      <p class="form-sub" id="form-sub">Sign in to your account to continue</p>
+
+      {% if error and mode in ['login', 'signup'] %}
+      <div class="error-msg">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+
+      {% if mode in ['login', 'signup'] %}
+      <div class="tabs">
+        <button class="tab {% if mode=='login' %}active{% endif %}" onclick="setMode('login')" id="tab-login">Sign In</button>
+        <button class="tab {% if mode=='signup' %}active{% endif %}" onclick="setMode('signup')" id="tab-signup">Create Account</button>
+      </div>
+      {% endif %}
+
+      <!-- LOGIN + SIGNUP (only shown for login/signup modes) -->
+      {% if mode in ['login', 'signup'] %}
+      <form id="form-login" method="POST" action="/login" style="{% if mode=='signup' %}display:none{% endif %}">
+        <div class="field">
+          <label>Email address</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" name="email" placeholder="you@restaurant.com" required autocomplete="email"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" name="password" placeholder="••••••••" required autocomplete="current-password"/>
+          </div>
+        </div>
+        <button type="submit" class="btn-cta">Sign In →</button>
+        <p style="text-align:center;margin-top:14px">
+          <a href="/forgot-password" style="font-size:13px;color:rgba(245,237,216,0.45);text-decoration:none;transition:color .2s" onmouseover="this.style.color='#E8B46A'" onmouseout="this.style.color='rgba(245,237,216,0.45)'">Forgot your password?</a>
+        </p>
+      </form>
+
+      <form id="form-signup" method="POST" action="/signup" style="{% if mode=='login' %}display:none{% endif %}">
+        <div class="field">
+          <label>Restaurant name</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            <input type="text" name="restaurant_name" placeholder="The Golden Fork" autocomplete="organization"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Email address</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" name="email" placeholder="you@restaurant.com" required autocomplete="email"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" name="password" placeholder="Min. 6 characters" required autocomplete="new-password" minlength="6"/>
+          </div>
+        </div>
+        <button type="submit" class="btn-cta">Create Account →</button>
+      </form>
+
+      <p class="privacy">
+        <svg class="lock-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Your menu data is encrypted and never shared
+      </p>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- FORGOT PASSWORD -->
+    {% if mode == 'forgot' %}
+    <div class="glass-card" style="margin-top:0">
+      <div class="form-ew"><div class="form-ew-dot"></div>Account Recovery</div>
+      <h2 class="form-title">Reset password</h2>
+      <p class="form-sub">Enter your account email and we'll send you a reset link.</p>
+      {% if error %}
+      <div class="error-msg">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+      <form method="POST" action="/forgot-password">
+        <div class="field">
+          <label>Email address</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input type="email" name="email" placeholder="you@restaurant.com" required autocomplete="email"/>
+          </div>
+        </div>
+        <button type="submit" class="btn-cta">Send Reset Link →</button>
+      </form>
+      <p style="text-align:center;margin-top:16px">
+        <a href="/login" style="font-size:13px;color:rgba(245,237,216,0.45);text-decoration:none" onmouseover="this.style.color='#E8B46A'" onmouseout="this.style.color='rgba(245,237,216,0.45)'">← Back to sign in</a>
+      </p>
+    </div>
+    {% endif %}
+
+    <!-- FORGOT SENT -->
+    {% if mode == 'forgot_sent' %}
+    <div class="glass-card" style="margin-top:0;text-align:center">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(232,180,106,0.12);border:1px solid rgba(232,180,106,0.25);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E8B46A" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </div>
+      <h2 class="form-title">Check your inbox</h2>
+      <p class="form-sub">If an account exists for that email, you'll receive a password reset link within a minute. Check your spam folder if it doesn't arrive.</p>
+      <a href="/login" class="btn-cta" style="display:block;text-decoration:none;text-align:center;padding:13px">Back to Sign In</a>
+    </div>
+    {% endif %}
+
+    <!-- RESET PASSWORD -->
+    {% if mode == 'reset' %}
+    <div class="glass-card" style="margin-top:0">
+      <div class="form-ew"><div class="form-ew-dot"></div>Account Recovery</div>
+      <h2 class="form-title">New password</h2>
+      <p class="form-sub">Choose a strong password for your MenuEdge account.</p>
+      {% if error %}
+      <div class="error-msg">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        {{ error }}
+      </div>
+      {% endif %}
+      <form method="POST" action="/reset-password/{{ token }}">
+        <div class="field">
+          <label>New password</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" name="password" placeholder="Min. 6 characters" required autocomplete="new-password" minlength="6"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Confirm new password</label>
+          <div class="iw">
+            <svg class="ii" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input type="password" name="password2" placeholder="Repeat password" required autocomplete="new-password" minlength="6"/>
+          </div>
+        </div>
+        <button type="submit" class="btn-cta">Set New Password →</button>
+      </form>
+    </div>
+    {% endif %}
+
+    <!-- RESET SUCCESS -->
+    {% if mode == 'reset_success' %}
+    <div class="glass-card" style="margin-top:0;text-align:center">
+      <div style="width:56px;height:56px;border-radius:16px;background:rgba(26,122,60,0.12);border:1px solid rgba(26,122,60,0.28);display:flex;align-items:center;justify-content:center;margin:0 auto 20px">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h2 class="form-title">Password updated</h2>
+      <p class="form-sub">Your password has been changed successfully. You can now sign in with your new password.</p>
+      <a href="/login" class="btn-cta" style="display:block;text-decoration:none;text-align:center;padding:13px">Sign In →</a>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<script>
+function setMode(mode){
+  const isL=mode==='login';
+  document.getElementById('form-login').style.display=isL?'':'none';
+  document.getElementById('form-signup').style.display=isL?'none':'';
+  document.getElementById('tab-login').classList.toggle('active',isL);
+  document.getElementById('tab-signup').classList.toggle('active',!isL);
+  document.getElementById('form-title').textContent=isL?'Welcome back':'Create your account';
+  document.getElementById('form-sub').textContent=isL?'Sign in to your account to continue':'Start optimising your menu today';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.env
+venv/
+env/
+
+# Database
+*.db
+*.sqlite3
+
+# Logs
+*.log
+server.log
+
+# Uploads & generated reports
+uploads/
+reports/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.key

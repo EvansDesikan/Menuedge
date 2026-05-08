@@ -1,0 +1,1688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MenuEdge — Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0D0B09;
+      --surface:#161412;
+      --surface-2:#1E1A16;
+      --surface-3:#252018;
+      --gold:#E8B46A;
+      --gold-pale:rgba(232,180,106,0.1);
+      --gold-border:rgba(232,180,106,0.22);
+      --terra:#D4622A;
+      --terra-glow:rgba(212,98,42,0.35);
+      --cream:#F5EDD8;
+      --cream-2:rgba(245,237,216,0.62);
+      --cream-3:rgba(245,237,216,0.32);
+      --border:rgba(245,237,216,0.07);
+      --border-2:rgba(245,237,216,0.12);
+      --shadow:0 1px 3px rgba(0,0,0,.5),0 4px 16px rgba(0,0,0,.3);
+      --shadow-md:0 4px 12px rgba(0,0,0,.6),0 8px 32px rgba(0,0,0,.4);
+      /* classification colors — also used by JS */
+      --green:#4ADE80;
+      --green-pale:rgba(74,222,128,0.1);
+      --green-border:rgba(74,222,128,0.22);
+      --blue:#60A5FA;
+      --blue-pale:rgba(96,165,250,0.1);
+      --amber:#FBBF24;
+      --amber-pale:rgba(251,191,36,0.1);
+      --red:#FC8181;
+      --red-pale:rgba(252,129,129,0.1);
+      --red-border:rgba(252,129,129,0.22);
+      /* text aliases for JS inline styles */
+      --text:#F5EDD8;
+      --text-2:rgba(245,237,216,0.62);
+      --text-3:rgba(245,237,216,0.32);
+      --primary:#D4622A;
+      --primary-pale:rgba(212,98,42,0.1);
+      --primary-border:rgba(212,98,42,0.25);
+    }
+    html,body{min-height:100%}
+    body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--cream)}
+    ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:var(--border-2);border-radius:3px}
+
+    /* ── LAYOUT ── */
+    .layout{display:flex;min-height:100vh}
+
+    /* ── SIDEBAR ── */
+    .sidebar{
+      width:240px;min-height:100vh;background:var(--surface);
+      border-right:1px solid var(--border);
+      position:fixed;top:0;left:0;
+      display:flex;flex-direction:column;
+      padding:28px 16px;z-index:100;
+    }
+    .sb-brand{display:flex;align-items:center;gap:9px;margin-bottom:36px;padding:0 8px}
+    .sb-logo{font-family:'Fraunces',serif;font-size:18px;font-weight:700;color:var(--cream);letter-spacing:3px}
+    .sb-mark{width:6px;height:6px;background:var(--terra);border-radius:50%;box-shadow:0 0 10px var(--terra-glow)}
+
+    .sb-section{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cream-3);padding:0 12px;margin-bottom:8px;margin-top:4px}
+    .nav-item{
+      display:flex;align-items:center;gap:11px;
+      padding:10px 12px;border-radius:10px;font-size:13px;font-weight:600;
+      color:var(--cream-2);text-decoration:none;transition:all .18s;margin-bottom:2px;
+    }
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--cream)}
+    .nav-item.active{background:var(--gold-pale);color:var(--gold);border:1px solid var(--gold-border)}
+    .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75}
+    .nav-item.active svg{opacity:1}
+
+    .sb-spacer{flex:1}
+    .sb-rest{
+      background:rgba(255,255,255,.04);border:1px solid var(--border);
+      border-radius:12px;padding:12px 14px;margin-bottom:10px;
+      text-decoration:none;display:block;cursor:pointer;transition:border-color .18s,background .18s;
+    }
+    .sb-rest:hover{background:rgba(255,255,255,.07);border-color:var(--gold-border)}
+    .sb-rest-name{font-size:13px;font-weight:700;color:var(--cream);line-height:1.2;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sb-rest-sub{font-size:11px;color:var(--cream-3)}
+    .sb-logout{
+      display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;
+      font-size:13px;font-weight:500;color:var(--cream-3);text-decoration:none;
+      transition:all .18s;
+    }
+    .sb-logout:hover{color:var(--red);background:rgba(252,129,129,.07)}
+
+    /* ── MAIN ── */
+    .main{flex:1;margin-left:240px;min-height:100vh;padding:36px 40px 80px}
+
+    /* ── PAGE HEADER ── */
+    .ph{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:32px;flex-wrap:wrap;gap:12px}
+    .ph-label{font-size:11px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--terra);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+    .ph-label::after{content:'';flex:1;height:1px;background:var(--terra);opacity:.2;max-width:32px}
+    .ph-title{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:var(--cream);margin-bottom:5px}
+    .ph-sub{font-size:13px;color:var(--cream-3)}
+    .btn-new{
+      display:inline-flex;align-items:center;gap:8px;
+      background:var(--terra);color:#fff;border:none;border-radius:10px;
+      padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;
+      text-decoration:none;font-family:'Plus Jakarta Sans',sans-serif;
+      box-shadow:0 4px 18px rgba(212,98,42,.3);transition:all .18s;
+    }
+    .btn-new:hover{transform:translateY(-1px);box-shadow:0 6px 26px rgba(212,98,42,.45)}
+
+    /* ── REVENUE HERO ── */
+    .rev-hero{
+      position:relative;overflow:hidden;
+      background:linear-gradient(135deg,#1A0D06 0%,#221308 45%,#1E0B0E 100%);
+      border:1px solid rgba(232,180,106,0.14);border-radius:20px;
+      padding:36px 44px;margin-bottom:28px;
+    }
+    .rev-hero::before{
+      content:'';position:absolute;width:360px;height:360px;border-radius:50%;
+      background:radial-gradient(circle,rgba(232,180,106,.1),transparent 70%);
+      right:-80px;top:-100px;pointer-events:none;
+    }
+    .rev-hero::after{
+      content:'';position:absolute;width:200px;height:200px;border-radius:50%;
+      background:radial-gradient(circle,rgba(212,98,42,.08),transparent 70%);
+      left:40%;bottom:-60px;pointer-events:none;
+    }
+    .rev-inner{position:relative;z-index:1;display:grid;grid-template-columns:1fr auto;align-items:center;gap:32px}
+    .rev-label{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(232,180,106,.6);margin-bottom:12px}
+    .rev-number{font-family:'Fraunces',serif;font-size:clamp(52px,6vw,76px);font-weight:700;color:var(--gold);line-height:1;margin-bottom:10px}
+    .rev-insight{font-size:14px;color:rgba(245,237,216,.55);line-height:1.6;max-width:500px}
+    .rev-tag{
+      display:inline-flex;align-items:center;gap:7px;
+      background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);
+      color:#4ADE80;font-size:12px;font-weight:700;
+      padding:5px 12px;border-radius:20px;margin-bottom:14px;
+    }
+
+    /* ── STAT CARDS ── */
+    .g4{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:26px}
+    .sc{
+      background:var(--surface);border:1px solid var(--border);border-radius:16px;
+      padding:22px 24px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+      transition:transform .2s,box-shadow .2s,border-color .2s;cursor:default;
+    }
+    .sc:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+    .sc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+    .sc-star::before{background:linear-gradient(90deg,#4ADE80,transparent)}
+    .sc-plow::before{background:linear-gradient(90deg,#60A5FA,transparent)}
+    .sc-puzzle::before{background:linear-gradient(90deg,#FBBF24,transparent)}
+    .sc-dog::before{background:linear-gradient(90deg,#FC8181,transparent)}
+    .sc:hover.sc-star{border-color:rgba(74,222,128,.2)}
+    .sc:hover.sc-plow{border-color:rgba(96,165,250,.2)}
+    .sc:hover.sc-puzzle{border-color:rgba(251,191,36,.2)}
+    .sc:hover.sc-dog{border-color:rgba(252,129,129,.2)}
+    .sc-icon{width:40px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px;font-size:16px}
+    .sc-star .sc-icon{background:var(--green-pale);color:var(--green)}
+    .sc-plow .sc-icon{background:var(--blue-pale);color:var(--blue)}
+    .sc-puzzle .sc-icon{background:var(--amber-pale);color:var(--amber)}
+    .sc-dog .sc-icon{background:var(--red-pale);color:var(--red)}
+    .sc-label{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--cream-3);margin-bottom:7px}
+    .sc-value{font-family:'Fraunces',serif;font-size:44px;font-weight:700;line-height:1;margin-bottom:7px}
+    .sc-star .sc-value{color:var(--green)}
+    .sc-plow .sc-value{color:var(--blue)}
+    .sc-puzzle .sc-value{color:var(--amber)}
+    .sc-dog .sc-value{color:var(--red)}
+    .sc-desc{font-size:12px;color:var(--cream-3);line-height:1.5}
+
+    /* ── GRID LAYOUTS ── */
+    .g2{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:24px}
+    .g31{display:grid;grid-template-columns:2fr 1fr;gap:22px;margin-bottom:22px}
+
+    /* ── CARDS ── */
+    .card{background:var(--surface);border:1px solid var(--border);border-radius:16px;box-shadow:var(--shadow)}
+    .card-p{padding:26px}
+    .card-title{font-family:'Fraunces',serif;font-size:19px;font-weight:600;color:var(--cream);margin-bottom:4px}
+    .card-sub{font-size:12px;color:var(--cream-3);margin-bottom:22px}
+
+    /* ── CHARTS ── */
+    .chart-wrap{position:relative;height:240px;margin-bottom:6px}
+    .chart-wrap-lg{position:relative;height:300px}
+    .donut-center{
+      position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+      text-align:center;pointer-events:none;
+    }
+    .dc-num{font-family:'Fraunces',serif;font-size:32px;font-weight:700;color:var(--cream);line-height:1}
+    .dc-lbl{font-size:10px;color:var(--cream-3);letter-spacing:.5px;text-transform:uppercase;margin-top:5px}
+
+    .legend-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px}
+    .leg-item{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--cream-2)}
+    .leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+    /* ── DISH LIST ── */
+    .dish-list{display:flex;flex-direction:column;gap:8px}
+    .dish-row{
+      display:flex;align-items:center;gap:12px;padding:11px 14px;
+      border-radius:11px;background:var(--surface-2);border:1px solid var(--border);
+      transition:all .18s;cursor:pointer;position:relative;overflow:hidden;
+    }
+    .dish-row:hover{border-color:rgba(232,180,106,.18)}
+
+    /* classification side gradient — full height right fade */
+    .dish-row::before{
+      content:'';position:absolute;top:0;right:0;
+      width:55%;height:100%;pointer-events:none;border-radius:0 11px 11px 0;
+    }
+    .dish-Star::before{background:linear-gradient(to left,rgba(74,222,128,.18) 0%,transparent 100%)}
+    .dish-Dog::before{background:linear-gradient(to left,rgba(252,129,129,.2) 0%,transparent 100%)}
+    .dish-Puzzle::before{background:linear-gradient(to left,rgba(251,191,36,.18) 0%,transparent 100%)}
+    .dish-Plowhorse::before{background:linear-gradient(to left,rgba(96,165,250,.18) 0%,transparent 100%)}
+
+    .dish-photo{
+      width:42px;height:42px;border-radius:9px;flex-shrink:0;
+      background:var(--surface-3);border:1px solid var(--border-2);
+      display:flex;align-items:center;justify-content:center;font-size:18px;overflow:hidden;cursor:pointer;
+    }
+    .dish-photo img{width:100%;height:100%;object-fit:cover}
+    .dish-info{flex:1;min-width:0}
+    .dish-name{font-size:13px;font-weight:700;color:var(--cream);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .dish-cat{font-size:11px;color:var(--cream-3);margin-top:2px}
+    .dish-price{font-size:13px;font-weight:700;color:rgba(255,255,255,.92);flex-shrink:0}
+    .badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0}
+    .badge-Star{background:var(--green-pale);color:var(--green);border:1px solid var(--green-border)}
+    .badge-Dog{background:var(--red-pale);color:var(--red);border:1px solid var(--red-border)}
+
+    /* ── SECTION TITLE ── */
+    .section-title{
+      font-family:'Fraunces',serif;font-size:20px;font-weight:600;
+      color:var(--cream);margin-bottom:16px;display:flex;align-items:center;gap:12px;
+    }
+    .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    /* ── POS CARD ── */
+    .pos-card{
+      background:var(--surface);border:1px solid var(--border);
+      border-radius:16px;padding:24px;margin-bottom:20px;
+    }
+    .pos-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--cream);margin-bottom:6px}
+    .pos-sub{font-size:13px;color:var(--cream-2);line-height:1.6;margin-bottom:18px}
+    .upload-zone-pos{
+      border:2px dashed var(--border-2);border-radius:12px;padding:28px 16px;text-align:center;
+      cursor:pointer;transition:all .22s;background:var(--surface-2);position:relative;margin-bottom:14px;
+    }
+    .upload-zone-pos:hover{border-color:rgba(232,180,106,.4);background:rgba(232,180,106,.05)}
+    .upload-zone-pos input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+    .upz-icon{
+      width:44px;height:44px;border-radius:12px;background:rgba(232,180,106,.08);
+      border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;
+      margin:0 auto 12px;color:var(--gold);
+    }
+    .upload-zone-pos p{font-size:13px;font-weight:700;color:var(--cream);margin-bottom:4px}
+    .upload-zone-pos small{font-size:12px;color:var(--cream-3)}
+    .pos-formats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+    .pos-fmt{background:var(--surface-2);border:1px solid var(--border-2);border-radius:6px;font-size:11px;font-weight:700;color:var(--cream-3);padding:3px 9px}
+    .pos-file-name{font-size:13px;color:var(--gold);margin-bottom:12px;font-weight:600}
+    .btn-run{
+      width:100%;padding:12px;border:none;border-radius:11px;
+      background:linear-gradient(135deg,var(--terra),#E8731A);color:#fff;
+      font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;
+      cursor:pointer;transition:all .2s;box-shadow:0 4px 18px rgba(212,98,42,.25);
+    }
+    .btn-run:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(212,98,42,.4)}
+    .pos-status{font-size:12px;color:var(--cream-3);margin-top:8px;text-align:center}
+
+    /* ── INSIGHT CARD ── */
+    .insight-card{
+      background:linear-gradient(135deg,#0E1A12,#0A1810);
+      border:1px solid rgba(74,222,128,.12);border-radius:16px;padding:24px;
+    }
+    .ic-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--green);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+    .ic-text{font-size:14px;color:var(--cream-2);line-height:1.65;margin-bottom:16px}
+    .ic-uplift{font-family:'Fraunces',serif;font-size:32px;font-weight:700;color:var(--green)}
+    .ic-uplift-label{font-size:11px;color:var(--cream-3);margin-top:4px}
+
+    /* ── HISTORY ── */
+    .history-list{display:flex;flex-direction:column;gap:8px}
+    .history-row{
+      display:flex;align-items:center;gap:12px;padding:13px 16px;
+      background:var(--surface-2);border:1px solid var(--border);border-radius:12px;
+      transition:all .18s;
+    }
+    .history-row:hover{background:rgba(232,180,106,.06);border-color:rgba(232,180,106,.15)}
+    .hr-icon{
+      width:38px;height:38px;background:var(--surface-3);border:1px solid var(--border-2);
+      border-radius:10px;display:flex;align-items:center;justify-content:center;
+      color:var(--gold);flex-shrink:0;
+    }
+    .hr-info{flex:1}
+    .hr-title{font-size:13px;font-weight:700;color:var(--cream)}
+    .hr-sub{font-size:11px;color:var(--cream-3);margin-top:2px}
+    .hr-badge{font-size:11px;font-weight:700;color:var(--gold);background:var(--gold-pale);padding:3px 9px;border-radius:20px;border:1px solid var(--gold-border)}
+
+    /* ── TOP WIN CARD ── */
+    .top-win-card{
+      background:linear-gradient(135deg,#1f0e04 0%,#2a1308 50%,#1e0b06 100%);
+      border:1px solid rgba(232,180,106,0.2);border-radius:16px;padding:22px 24px;
+      position:relative;overflow:hidden;
+    }
+    .top-win-card::before{
+      content:'';position:absolute;width:240px;height:240px;border-radius:50%;
+      background:radial-gradient(circle,rgba(232,180,106,.08),transparent 70%);
+      right:-40px;top:-60px;pointer-events:none;
+    }
+    .top-win-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold);margin-bottom:10px;display:flex;align-items:center;gap:7px}
+    .top-win-title{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--cream);margin-bottom:8px;line-height:1.3}
+    .top-win-detail{font-size:12px;color:rgba(245,237,216,.55);line-height:1.65;margin-bottom:14px}
+    .top-win-uplift{font-family:'Fraunces',serif;font-size:26px;font-weight:700;color:var(--gold);line-height:1}
+    .top-win-uplift-label{font-size:10px;color:rgba(245,237,216,.35);margin-top:4px;letter-spacing:.4px;text-transform:uppercase}
+
+    /* ── EMPTY STATE ── */
+    .empty{text-align:center;padding:80px 24px}
+    .empty-icon{
+      width:76px;height:76px;background:var(--surface);border:1.5px solid var(--border-2);
+      border-radius:22px;display:flex;align-items:center;justify-content:center;
+      margin:0 auto 20px;color:var(--cream-3);
+    }
+    .empty h3{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--cream);margin-bottom:10px}
+    .empty p{font-size:14px;color:var(--cream-2);line-height:1.65;max-width:340px;margin:0 auto 28px}
+    .btn-start{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(135deg,var(--terra),#E8731A);
+      color:#fff;border:none;border-radius:11px;
+      padding:13px 26px;font-size:14px;font-weight:700;text-decoration:none;
+      font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;transition:all .2s;
+      box-shadow:0 4px 18px rgba(212,98,42,.3);
+    }
+    .btn-start:hover{transform:translateY(-1px);box-shadow:0 6px 26px rgba(212,98,42,.45)}
+
+    /* ── WHY BUTTON ── */
+    .btn-why{
+      display:inline-flex;align-items:center;gap:6px;
+      background:linear-gradient(135deg,rgba(212,98,42,.85),rgba(232,115,26,.9));
+      border:none;color:#fff;font-size:13px;font-weight:700;
+      padding:9px 18px;border-radius:10px;cursor:pointer;
+      transition:all .18s;white-space:nowrap;flex-shrink:0;font-family:inherit;
+      box-shadow:0 3px 12px rgba(212,98,42,.35);letter-spacing:.2px;
+    }
+    .btn-why:hover{transform:translateY(-1px);box-shadow:0 5px 18px rgba(212,98,42,.5);background:linear-gradient(135deg,#D4622A,#E8731A)}
+
+    /* ── MODAL ── */
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:1000;
+      display:flex;align-items:center;justify-content:center;padding:20px;
+      backdrop-filter:blur(4px);opacity:0;pointer-events:none;transition:opacity .2s;
+    }
+    .modal-overlay.open{opacity:1;pointer-events:all}
+    .modal{
+      background:var(--surface);border:1px solid var(--border-2);border-radius:20px;
+      width:100%;max-width:620px;max-height:88vh;overflow-y:auto;
+      box-shadow:0 24px 64px rgba(0,0,0,.7);transform:translateY(16px);transition:transform .25s;
+    }
+    .modal-overlay.open .modal{transform:translateY(0)}
+    .modal-head{
+      padding:24px 28px 20px;border-bottom:1px solid var(--border);
+      display:flex;align-items:flex-start;justify-content:space-between;gap:12px;
+      position:sticky;top:0;background:var(--surface);z-index:1;
+    }
+    .modal-title{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:var(--cream);line-height:1.3}
+    .modal-sub{font-size:12px;color:var(--cream-3);margin-top:4px}
+    .modal-close{
+      background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:8px;
+      width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;color:var(--cream-3);flex-shrink:0;transition:all .18s;
+    }
+    .modal-close:hover{background:rgba(252,129,129,.12);color:var(--red);border-color:rgba(252,129,129,.25)}
+    .modal-body{padding:24px 28px}
+    .modal-loading{text-align:center;padding:48px 0;color:var(--cream-3);font-size:14px}
+    .modal-spinner{
+      width:36px;height:36px;border:3px solid var(--border-2);border-top-color:var(--amber);
+      border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    .insight-section{margin-bottom:22px}
+    .insight-section-label{
+      font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;
+      color:var(--cream-3);margin-bottom:12px;display:flex;align-items:center;gap:8px;
+    }
+    .insight-section-label::after{content:'';flex:1;height:1px;background:var(--border)}
+
+    .cause-item{
+      background:var(--surface-2);border:1px solid var(--border);border-radius:12px;
+      padding:14px 16px;margin-bottom:8px;
+    }
+    .cause-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px}
+    .cause-name{font-size:13px;font-weight:700;color:var(--cream)}
+    .sev-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+    .sev-High{background:rgba(252,129,129,.15);color:var(--red);border:1px solid rgba(252,129,129,.25)}
+    .sev-Medium{background:var(--amber-pale);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+    .sev-Low{background:var(--blue-pale);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
+    .cause-exp{font-size:12px;color:var(--cream-2);line-height:1.55}
+
+    .fix-item{
+      background:var(--surface-2);border:1px solid var(--border);border-left:3px solid var(--green);
+      border-radius:0 12px 12px 0;padding:14px 16px;margin-bottom:8px;
+    }
+    .fix-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:5px}
+    .fix-action{font-size:13px;font-weight:700;color:var(--green)}
+    .eff-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+    .eff-Easy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-border)}
+    .eff-Medium{background:var(--amber-pale);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+    .eff-Hard{background:var(--red-pale);color:var(--red);border:1px solid var(--red-border)}
+    .fix-detail{font-size:12px;color:var(--cream-2);line-height:1.55;margin-bottom:4px}
+    .fix-impact{font-size:11px;color:var(--cream-3);font-style:italic}
+
+    .rewrite-box{
+      background:linear-gradient(135deg,#0E1A0E,#091509);
+      border:1px solid rgba(74,222,128,.15);border-radius:12px;padding:16px;
+    }
+    .rewrite-row{margin-bottom:10px}
+    .rewrite-label{font-size:10px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--green);margin-bottom:4px}
+    .rewrite-val{font-size:13px;color:var(--cream);line-height:1.5}
+
+    .verdict-box{
+      background:var(--surface-2);border:1px solid var(--border-2);border-radius:12px;
+      padding:14px 16px;font-size:13px;color:var(--cream-2);line-height:1.6;
+      font-style:italic;
+    }
+    .benchmark-box{font-size:12px;color:var(--cream-3);line-height:1.6;padding:10px 0 0}
+
+    /* ── TREND SECTION ── */
+    .trend-header{
+      display:flex;align-items:center;justify-content:space-between;
+      margin-bottom:20px;flex-wrap:wrap;gap:12px;
+    }
+    .btn-trends{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(135deg,#1a0a2e,#2a0a3e);
+      border:1px solid rgba(139,92,246,.35);
+      color:#a78bfa;font-size:13px;font-weight:700;
+      padding:10px 20px;border-radius:10px;cursor:pointer;
+      transition:all .2s;font-family:inherit;
+    }
+    .btn-trends:hover{border-color:rgba(139,92,246,.6);background:rgba(139,92,246,.15)}
+    .btn-trends.loading{opacity:.6;pointer-events:none}
+
+    .trend-summary-box{
+      background:linear-gradient(135deg,#0f0a1a,#140a22);
+      border:1px solid rgba(139,92,246,.2);border-radius:14px;
+      padding:18px 20px;margin-bottom:20px;
+    }
+    .trend-summary-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:#a78bfa;margin-bottom:8px}
+    .trend-summary-text{font-size:13px;color:var(--cream-2);line-height:1.65}
+    .trend-quick-win{
+      display:inline-flex;align-items:center;gap:7px;margin-top:12px;
+      background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);
+      color:#c4b5fd;font-size:12px;font-weight:700;padding:5px 12px;border-radius:20px;
+    }
+    .trend-avoid{
+      display:inline-flex;align-items:center;gap:7px;margin-top:8px;margin-left:8px;
+      background:rgba(252,129,129,.08);border:1px solid rgba(252,129,129,.2);
+      color:var(--red);font-size:12px;font-weight:600;padding:5px 12px;border-radius:20px;
+    }
+
+    .trend-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+    .trend-card{
+      background:var(--surface-2);border:1px solid var(--border);border-radius:14px;
+      padding:18px;transition:all .2s;position:relative;overflow:hidden;
+    }
+    .trend-card::before{
+      content:'';position:absolute;top:0;left:0;right:0;height:2px;
+    }
+    .trend-Hot::before{background:linear-gradient(90deg,#f59e0b,#ef4444)}
+    .trend-Rising::before{background:linear-gradient(90deg,#8b5cf6,#6366f1)}
+    .trend-Emerging::before{background:linear-gradient(90deg,#06b6d4,#3b82f6)}
+    .trend-card:hover{transform:translateY(-3px);border-color:rgba(139,92,246,.3)}
+
+    .trend-badges{display:flex;align-items:center;gap:7px;margin-bottom:10px;flex-wrap:wrap}
+    .trend-strength{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+    .strength-Hot{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+    .strength-Rising{background:rgba(139,92,246,.15);color:#a78bfa;border:1px solid rgba(139,92,246,.3)}
+    .strength-Emerging{background:rgba(6,182,212,.12);color:#67e8f9;border:1px solid rgba(6,182,212,.25)}
+    .trend-effort{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
+    .effort-Easy{background:var(--green-pale);color:var(--green);border:1px solid var(--green-border)}
+    .effort-Medium{background:var(--amber-pale);color:var(--amber);border:1px solid rgba(251,191,36,.25)}
+    .effort-Hard{background:var(--red-pale);color:var(--red);border:1px solid var(--red-border)}
+
+    .trend-name{font-family:'Fraunces',serif;font-size:16px;font-weight:600;color:var(--cream);margin-bottom:6px}
+    .trend-desc{font-size:12px;color:var(--cream-2);line-height:1.55;margin-bottom:10px}
+    .trend-why{font-size:11px;color:#a78bfa;line-height:1.5;padding:8px 10px;background:rgba(139,92,246,.08);border-radius:8px;margin-bottom:10px}
+    .trend-meta{display:flex;gap:14px;flex-wrap:wrap}
+    .trend-meta-item{font-size:11px;color:var(--cream-3);display:flex;align-items:center;gap:4px}
+    .trend-meta-item strong{color:var(--cream-2)}
+
+    .trends-placeholder{
+      text-align:center;padding:48px 24px;
+      background:var(--surface);border:1px dashed var(--border-2);border-radius:16px;
+    }
+    .trends-placeholder-icon{font-size:36px;margin-bottom:14px}
+    .trends-placeholder p{font-size:14px;color:var(--cream-3);line-height:1.6;max-width:320px;margin:0 auto}
+
+    /* ── SEASONAL SECTION ── */
+    .seasonal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+    .btn-seasonal{
+      display:inline-flex;align-items:center;gap:8px;
+      background:linear-gradient(135deg,#0d1f12,#0a1c1a);
+      border:1px solid rgba(74,222,128,.3);
+      color:#4ade80;font-size:13px;font-weight:700;
+      padding:10px 20px;border-radius:10px;cursor:pointer;
+      transition:all .2s;font-family:inherit;
+    }
+    .btn-seasonal:hover{border-color:rgba(74,222,128,.6);background:rgba(74,222,128,.12)}
+    .btn-seasonal.loading{opacity:.6;pointer-events:none}
+
+    .season-banner{
+      background:linear-gradient(135deg,#0e1a0d,#0c1a10);
+      border:1px solid rgba(74,222,128,.15);border-left:3px solid var(--gold);
+      border-radius:14px;padding:16px 20px;margin-bottom:20px;
+      display:flex;align-items:center;gap:14px;
+    }
+    .season-banner-icon{font-size:26px;flex-shrink:0}
+    .season-name{font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:var(--gold);margin-bottom:3px}
+    .season-ctx{font-size:12px;color:var(--cream-3);line-height:1.5}
+
+    .season-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px}
+    .season-col-head{
+      font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;
+      margin-bottom:12px;display:flex;align-items:center;gap:7px;
+    }
+    .season-col-add .season-col-head{color:var(--green)}
+    .season-col-out .season-col-head{color:var(--red)}
+
+    .season-dish{
+      background:var(--surface-2);border:1px solid var(--border);border-radius:11px;
+      padding:12px 14px;margin-bottom:8px;
+    }
+    .season-col-add .season-dish{border-left:3px solid var(--green)}
+    .season-col-out .season-dish{border-left:3px solid var(--red)}
+    .season-dish-name{font-size:13px;font-weight:700;color:var(--cream);margin-bottom:2px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+    .season-price{font-size:11px;font-weight:700;color:var(--gold);background:var(--gold-pale);padding:2px 8px;border-radius:20px;border:1px solid var(--gold-border);flex-shrink:0}
+    .season-reason{font-size:12px;color:var(--cream-3);line-height:1.5;margin-top:4px}
+
+    .season-opportunity{
+      background:linear-gradient(135deg,#1a0e05,#1e1005);
+      border:1px solid rgba(232,180,106,.18);border-radius:14px;padding:18px 20px;
+    }
+    .season-opp-label{font-size:10px;font-weight:700;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+    .season-opp-text{font-size:13px;color:var(--cream-2);line-height:1.65}
+
+    .season-input-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .season-input{
+      flex:1;min-width:180px;background:var(--surface-2);border:1px solid var(--border-2);
+      color:var(--cream);font-size:13px;padding:10px 14px;border-radius:10px;
+      font-family:'Plus Jakarta Sans',sans-serif;outline:none;transition:border-color .2s;
+    }
+    .season-input:focus{border-color:rgba(74,222,128,.4)}
+    .season-input::placeholder{color:var(--cream-3)}
+
+    .seasonal-placeholder{
+      text-align:center;padding:48px 24px;
+      background:var(--surface);border:1px dashed var(--border-2);border-radius:16px;
+    }
+    .seasonal-placeholder-icon{font-size:36px;margin-bottom:14px}
+    .seasonal-placeholder p{font-size:14px;color:var(--cream-3);line-height:1.6;max-width:360px;margin:0 auto 20px}
+
+    /* ── FOOD BG ── */
+    body::before{
+      content:'';position:fixed;inset:-6%;z-index:-1;pointer-events:none;
+      background:url('/static/food-bg.jpg') center 65%/cover no-repeat;
+      opacity:.055;
+      animation:foodToss 20s ease-in-out infinite;
+      will-change:transform;
+      transform-origin:center center;
+    }
+    @keyframes foodToss{
+      0%   {transform:scale(1)    translate(0,0)         rotate(0deg)}
+      15%  {transform:scale(1.04) translate(1.2%,-1.5%)  rotate(.25deg)}
+      30%  {transform:scale(1.07) translate(-.8%,1.2%)   rotate(-.3deg)}
+      45%  {transform:scale(1.03) translate(1.5%,.8%)    rotate(.15deg)}
+      60%  {transform:scale(1.06) translate(-.5%,-1%)    rotate(-.2deg)}
+      75%  {transform:scale(1.04) translate(.8%,1.5%)    rotate(.1deg)}
+      90%  {transform:scale(1.02) translate(-1.2%,.3%)   rotate(-.15deg)}
+      100% {transform:scale(1)    translate(0,0)         rotate(0deg)}
+    }
+
+    /* ── NOISE ── */
+    body::after{
+      content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    }
+
+    /* ── ANIMATIONS ── */
+    .sc{animation:fadeUp .4s cubic-bezier(.22,1,.36,1) both}
+    .g4 .sc:nth-child(1){animation-delay:.05s}
+    .g4 .sc:nth-child(2){animation-delay:.1s}
+    .g4 .sc:nth-child(3){animation-delay:.15s}
+    .g4 .sc:nth-child(4){animation-delay:.2s}
+    .rev-hero,.card{animation:fadeUp .38s cubic-bezier(.22,1,.36,1) both}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+    @media(max-width:1100px){.g31{grid-template-columns:1fr}}
+    @media(max-width:900px){.g4{grid-template-columns:repeat(2,1fr)}.g2{grid-template-columns:1fr}}
+    @media(max-width:768px){.sidebar{display:none}.main{margin-left:0;padding:20px}}
+    @media(max-width:500px){.g4{grid-template-columns:1fr}}
+
+    /* ── COMPETITION SECTION ── */
+    .comp-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px}
+    .btn-comp{
+      display:inline-flex;align-items:center;gap:8px;
+      background:transparent;border:1px solid rgba(232,180,106,.35);
+      color:var(--gold);border-radius:9px;padding:8px 18px;
+      font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;
+      transition:all .18s;letter-spacing:.3px;
+    }
+    .btn-comp:hover{border-color:rgba(232,180,106,.7);background:rgba(232,180,106,.1)}
+    .btn-comp.loading{opacity:.6;pointer-events:none}
+    .comp-input-row{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+    .comp-input{
+      flex:1;min-width:160px;background:var(--surface-2);border:1px solid var(--border-2);
+      color:var(--cream);border-radius:9px;padding:9px 14px;font-size:13px;font-family:inherit;
+      outline:none;transition:border-color .18s;
+    }
+    .comp-input:focus{border-color:rgba(232,180,106,.4)}
+    .comp-input::placeholder{color:var(--cream-3)}
+    .comp-placeholder{text-align:center;padding:40px 20px;color:var(--cream-3)}
+    .comp-placeholder-icon{font-size:36px;margin-bottom:12px}
+    .comp-overview{background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:18px 22px;margin-bottom:16px}
+    .comp-ov-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:12px}
+    .comp-ov-item{text-align:center}
+    .comp-ov-value{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:var(--gold)}
+    .comp-ov-label{font-size:10px;color:var(--cream-3);letter-spacing:.8px;text-transform:uppercase;margin-top:4px}
+    .comp-ov-summary{font-size:13px;color:var(--cream-2);line-height:1.6;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+    .comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
+    .comp-subcard{background:var(--surface-2);border:1px solid var(--border);border-radius:13px;padding:16px 18px}
+    .comp-subcard-title{font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:var(--cream-3);margin-bottom:12px}
+    .comp-competitor-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+    .comp-competitor-item:last-child{border-bottom:none;padding-bottom:0}
+    .comp-comp-name{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:3px}
+    .comp-comp-meta{font-size:11px;color:var(--cream-3)}
+    .comp-threat{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap}
+    .comp-threat-high{background:rgba(252,129,129,.12);color:var(--red);border:1px solid rgba(252,129,129,.22)}
+    .comp-threat-medium{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+    .comp-threat-low{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+    .comp-gap-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px}
+    .comp-gap-item:last-child{border-bottom:none;padding-bottom:0}
+    .comp-gap-priority{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0}
+    .comp-gap-high{background:rgba(212,98,42,.12);color:var(--terra);border:1px solid rgba(212,98,42,.25)}
+    .comp-gap-medium{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+    .comp-gap-low{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+    .comp-gap-name{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:3px}
+    .comp-gap-why{font-size:11px;color:var(--cream-3);line-height:1.5}
+    .comp-gap-price{font-size:12px;color:var(--gold);font-weight:600;margin-top:3px}
+    .comp-win-item{padding:9px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:flex-start}
+    .comp-win-item:last-child{border-bottom:none;padding-bottom:0}
+    .comp-win-effort{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+    .comp-win-action{font-size:13px;font-weight:600;color:var(--cream);margin-bottom:3px}
+    .comp-win-impact{font-size:11px;color:var(--cream-3)}
+    .comp-recs{list-style:none;padding:0}
+    .comp-recs li{padding:8px 0;border-bottom:1px solid var(--border);font-size:13px;color:var(--cream-2);line-height:1.5;padding-left:18px;position:relative}
+    .comp-recs li:last-child{border-bottom:none}
+    .comp-recs li::before{content:'→';position:absolute;left:0;color:var(--gold);font-weight:700}
+    .comp-price-verdict{display:inline-block;font-size:12px;font-weight:700;padding:4px 12px;border-radius:7px;margin-bottom:10px}
+    .comp-price-competitive{background:rgba(74,222,128,.1);color:var(--green);border:1px solid rgba(74,222,128,.2)}
+    .comp-price-overpriced{background:rgba(252,129,129,.12);color:var(--red);border:1px solid rgba(252,129,129,.22)}
+    .comp-price-underpriced{background:rgba(251,191,36,.1);color:var(--amber);border:1px solid rgba(251,191,36,.2)}
+    .comp-price-unknown{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.2)}
+  </style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<aside class="sidebar">
+  <a href="/home" class="sb-brand" style="text-decoration:none">
+    <span class="sb-logo">MENUEDGE</span>
+    <div class="sb-mark"></div>
+  </a>
+
+  <div class="sb-section">Main</div>
+  <a href="/dashboard" class="nav-item active">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="/home" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    Home
+  </a>
+  <a href="/menu" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Analyse Menu
+  </a>
+  <a href="#trends-section" class="nav-item" onclick="scrollToTrends()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+    Trend Opportunities
+  </a>
+  <a href="#insights-section" class="nav-item" onclick="scrollToInsights()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    Dish Insights
+  </a>
+  <a href="#seasonal-section" class="nav-item" onclick="scrollToSection('seasonal-section')">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12"/><path d="M12 6v6l4 2"/><path d="M2 2l4 4"/></svg>
+    Seasonal
+  </a>
+
+  <a href="#competition-section" class="nav-item" onclick="scrollToSection('competition-section')" style="{% if not has_pro %}opacity:0.55{% endif %}">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+    Competition Scan
+    {% if not has_pro %}<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="margin-left:auto;flex-shrink:0;opacity:.6"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>{% endif %}
+  </a>
+
+  <div class="sb-spacer"></div>
+
+  <a href="/profile" class="sb-rest">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="sb-rest-name" style="display:flex;align-items:center;gap:7px">
+          {{ stats.restaurant_name or 'Your Restaurant' }}
+          {% if is_admin %}<span style="font-size:9px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:rgba(232,180,106,0.18);color:#E8B46A;border:1px solid rgba(232,180,106,0.3);border-radius:4px;padding:1px 6px">ADMIN</span>{% endif %}
+        </div>
+        <div class="sb-rest-sub">{{ stats.total_analyses }} analyse{{ 's' if stats.total_analyses != 1 }} · View profile</div>
+      </div>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,0.3)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </a>
+  <a href="/logout" class="sb-logout">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign out
+  </a>
+</aside>
+
+<!-- ── MAIN CONTENT ── -->
+<main class="main">
+
+  {% if stats.total_analyses == 0 %}
+  <!-- EMPTY STATE -->
+  <div class="empty">
+    <div class="empty-icon">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    </div>
+    <h3>No analyses yet</h3>
+    <p>Upload your first menu photo to see dish performance, AI recommendations, and revenue insights.</p>
+    <a href="/menu" class="btn-start">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Analyse My Menu
+    </a>
+  </div>
+
+  {% else %}
+
+  <!-- PAGE HEADER -->
+  <div class="ph">
+    <div>
+      <div class="ph-label">Overview</div>
+      <h1 class="ph-title">Good to see you 👋</h1>
+      <p class="ph-sub">{{ stats.user_email }} · {{ stats.total_items_analysed }} dishes tracked</p>
+    </div>
+    <a href="/menu" class="btn-new">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Analysis
+    </a>
+  </div>
+
+  <!-- REVENUE HERO -->
+  {% if stats.latest_report %}
+  <div class="rev-hero">
+    <div class="rev-inner">
+      <div>
+        <div class="rev-tag">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+          Estimated Monthly Uplift
+        </div>
+        <div class="rev-number">{{ stats.latest_report.estimated_total_monthly_uplift or '—' }}</div>
+        <div class="rev-insight">{{ stats.latest_report.restaurant_summary.headline_insight or '' }}</div>
+      </div>
+      <canvas id="rev-canvas" width="180" height="80" style="opacity:.85"></canvas>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- STAT CARDS -->
+  <div class="g4">
+    <div class="sc sc-star">
+      <div class="sc-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div class="sc-label">Stars</div>
+      <div class="sc-value" data-count="{{ stats.counts.Star }}">0</div>
+      <div class="sc-desc">High profit · High popularity<br>Keep &amp; promote these</div>
+    </div>
+    <div class="sc sc-plow">
+      <div class="sc-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      </div>
+      <div class="sc-label">Plowhorses</div>
+      <div class="sc-value" data-count="{{ stats.counts.Plowhorse }}">0</div>
+      <div class="sc-desc">High popularity · Low margin<br>Reprice or bundle</div>
+    </div>
+    <div class="sc sc-puzzle">
+      <div class="sc-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <div class="sc-label">Puzzles</div>
+      <div class="sc-value" data-count="{{ stats.counts.Puzzle }}">0</div>
+      <div class="sc-desc">High margin · Low popularity<br>Reposition &amp; promote</div>
+    </div>
+    <div class="sc sc-dog">
+      <div class="sc-icon">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+      <div class="sc-label">Dogs</div>
+      <div class="sc-value" data-count="{{ stats.counts.Dog }}">0</div>
+      <div class="sc-desc">Low profit · Low popularity<br>Remove or redesign</div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="g2">
+    <div class="card card-p">
+      <div class="card-title">Menu Engineering Matrix</div>
+      <div class="card-sub">Classification breakdown across all analyses</div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="donut-chart"></canvas>
+        <div class="donut-center">
+          <div class="dc-num">{{ stats.total_items_analysed }}</div>
+          <div class="dc-lbl">Dishes</div>
+        </div>
+      </div>
+      <div class="legend-row">
+        <div class="leg-item"><div class="leg-dot" style="background:#4ADE80"></div>Stars</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#60A5FA"></div>Plowhorses</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#FBBF24"></div>Puzzles</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#FC8181"></div>Dogs</div>
+      </div>
+    </div>
+    <div class="card card-p">
+      <div class="card-title">Top Performing Dishes</div>
+      <div class="card-sub">By classification priority score</div>
+      <div class="chart-wrap-lg">
+        <canvas id="bar-chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- DISHES + SIDEBAR -->
+  <div class="g31">
+    <div>
+      {% if stats.stars %}
+      <div class="card card-p" style="margin-bottom:22px">
+        <div class="card-title">⭐ Star Dishes</div>
+        <div class="card-sub">Your best performers — keep visible and promote</div>
+        <div class="dish-list">
+          {% for item in stats.stars %}
+          <div class="dish-row dish-Star">
+            <div class="dish-photo" onclick="triggerPhotoUpload('{{ item.name }}')" title="Click to add photo">
+              {% if stats.photo_map.get(item.name) %}
+              <img src="{{ stats.photo_map[item.name] }}" alt="{{ item.name }}"/>
+              {% else %}📸{% endif %}
+            </div>
+            <div class="dish-info">
+              <div class="dish-name">{{ item.name }}</div>
+              <div class="dish-cat">{{ item.category }}</div>
+            </div>
+            <div class="dish-price">{{ stats.latest_report.restaurant_summary.get('currency_symbol','$') }}{{ "%.2f"|format(item.original_price|float) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      {% if stats.dogs or stats.puzzles %}
+      <div class="card card-p" style="margin-bottom:22px" id="insights-section">
+        <div class="card-title" style="color:var(--red)">🐕 Underperformers — Take Action</div>
+        <div class="card-sub">Click "Why?" on any dish for a deep AI diagnosis</div>
+        <div class="dish-list">
+          {% for item in stats.dogs[:4] %}
+          <div class="dish-row dish-Dog">
+            <div class="dish-photo">🍽️</div>
+            <div class="dish-info">
+              <div class="dish-name">{{ item.name }}</div>
+              <div class="dish-cat">{{ item.action }}</div>
+            </div>
+            <button class="btn-why" data-dish="{{ item | tojson | forceescape }}" onclick="openDishInsights(JSON.parse(this.dataset.dish))">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Why?
+            </button>
+          </div>
+          {% endfor %}
+          {% for item in stats.puzzles[:3] %}
+          <div class="dish-row dish-Puzzle">
+            <div class="dish-photo">🧩</div>
+            <div class="dish-info">
+              <div class="dish-name">{{ item.name }}</div>
+              <div class="dish-cat">{{ item.action }}</div>
+            </div>
+            <button class="btn-why" data-dish="{{ item | tojson | forceescape }}" onclick="openDishInsights(JSON.parse(this.dataset.dish))">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Why?
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- TREND OPPORTUNITIES -->
+      <div class="card card-p" style="margin-bottom:22px" id="trends-section">
+        <div class="trend-header">
+          <div>
+            <div class="card-title">📈 Trend Opportunities</div>
+            <div class="card-sub">Dishes gaining traction in your cuisine style that you could add</div>
+          </div>
+          {% if stats.latest_report %}
+          <button class="btn-trends" id="trends-btn" onclick="loadTrends()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg>
+            Get Trend Report
+          </button>
+          {% endif %}
+        </div>
+        <div id="trends-content">
+          <div class="trends-placeholder">
+            <div class="trends-placeholder-icon">🔮</div>
+            <p>Click <strong>Get Trend Report</strong> to see what's trending in {{ stats.latest_report.restaurant_summary.cuisine_type if stats.latest_report else 'your cuisine' }} and which dishes you should add to your menu.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- SEASONAL MENU SUGGESTIONS -->
+      <div class="card card-p" style="margin-bottom:22px" id="seasonal-section">
+        <div class="seasonal-header">
+          <div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-3px;margin-right:6px"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12"/><path d="M12 6v6l4 2"/><path d="M2 2l4 4"/></svg>
+              Seasonal Menu Suggestions
+            </div>
+            <div class="card-sub">What to add, rotate out & capitalise on this season — based on your location and cuisine</div>
+          </div>
+          {% if stats.latest_report %}
+          <button class="btn-seasonal" id="seasonal-btn" onclick="loadSeasonal()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12"/><path d="M2 2l4 4"/></svg>
+            Get Seasonal Report
+          </button>
+          {% endif %}
+        </div>
+        <div id="seasonal-content">
+          {% set ss = stats.latest_report.seasonal_suggestions if stats.latest_report else none %}
+          {% if ss %}
+            <div id="seasonal-result">{{ '' }}</div>
+            <script>window._cachedSeasonal = {{ ss | tojson }};</script>
+          {% else %}
+          <div class="seasonal-placeholder">
+            <div class="seasonal-placeholder-icon">🍂</div>
+            <p>Enter your restaurant's location and click <strong>Get Seasonal Report</strong> to see what to add, rotate out, and capitalise on this season.</p>
+            <div class="season-input-row" style="justify-content:center;max-width:480px;margin:0 auto">
+              <input class="season-input" id="season-location-input" placeholder="e.g. Mumbai, India or Chicago, USA" style="max-width:320px"/>
+              <button class="btn-seasonal" onclick="loadSeasonal()">Generate</button>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- COMPETITION SCAN -->
+      <div class="card card-p" style="margin-bottom:22px" id="competition-section">
+        <div class="comp-header">
+          <div>
+            <div class="card-title">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:-3px;margin-right:6px"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+              Competition Scan
+              {% if not has_pro %}<span style="font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;background:rgba(232,180,106,0.15);color:var(--gold);border:1px solid rgba(232,180,106,0.3);border-radius:4px;padding:2px 7px;margin-left:8px;vertical-align:middle">PRO</span>{% endif %}
+            </div>
+            <div class="card-sub">See who's competing with you nearby and where you can win</div>
+          </div>
+          {% if has_pro and stats.latest_report %}
+          <button class="btn-comp" id="comp-btn" onclick="runCompetitiveScan()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Scan Area
+          </button>
+          {% endif %}
+        </div>
+
+        {% if has_pro %}
+        <div class="comp-inputs" id="comp-inputs">
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px">
+            <div style="position:relative;flex:1;min-width:200px;display:flex">
+              <input class="comp-input" id="comp-location" placeholder="Your location (e.g. Shoreditch, London)" style="flex:1;padding-right:40px" oninput="_compLat=null;_compLng=null"/>
+              <button id="comp-locate-btn" title="Use my location" onclick="detectLocation()" style="position:absolute;right:4px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--gold);padding:4px 6px;display:flex;align-items:center;opacity:.75" onmouseover="this.style.opacity=1" onmouseout="this.style.opacity='.75'">
+                <svg id="comp-locate-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2"/></svg>
+              </button>
+            </div>
+            <input class="comp-input" id="comp-cuisine" placeholder="Cuisine type (e.g. Italian, Indian)" value="{{ stats.latest_report.restaurant_summary.cuisine_type if stats.latest_report else '' }}" style="flex:0 0 180px"/>
+          </div>
+        </div>
+        <div id="comp-content">
+          <div class="comp-placeholder">
+            <div class="comp-placeholder-icon">🎯</div>
+            <p>Enter your location and click <strong>Scan Area</strong> to see who's competing with you, where you're winning, and where you can improve.</p>
+          </div>
+        </div>
+
+        {% else %}
+        <!-- LOCKED STATE -->
+        <div style="text-align:center;padding:40px 20px">
+          <div style="width:56px;height:56px;border-radius:16px;background:rgba(232,180,106,0.08);border:1px solid rgba(232,180,106,0.2);display:flex;align-items:center;justify-content:center;margin:0 auto 18px">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:var(--cream);margin-bottom:8px">Pro Feature</div>
+          <p style="font-size:14px;color:var(--cream-3);line-height:1.7;max-width:340px;margin:0 auto 22px">Upgrade to Pro to scan nearby competitors, analyse their menus, find pricing gaps, and discover what dishes they offer that you don't.</p>
+          <a href="/billing" style="display:inline-flex;align-items:center;gap:8px;padding:11px 22px;background:linear-gradient(135deg,var(--terra),#E8731A);color:#fff;font-size:14px;font-weight:700;text-decoration:none;border-radius:10px;box-shadow:0 4px 20px rgba(212,98,42,0.28)">
+            Upgrade to Pro →
+          </a>
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="card card-p">
+        <div class="card-title">Recent Analyses</div>
+        <div class="card-sub">Your history</div>
+        <div class="history-list">
+          {% for a in analyses[:5] %}
+          <div class="history-row">
+            <div class="hr-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            </div>
+            <div class="hr-info">
+              <div class="hr-title">Analysis #{{ loop.index }}</div>
+              <div class="hr-sub">{{ a.created_at[:16].replace('T',' ') }}</div>
+            </div>
+            <a href="/report/download/{{ a['id'] }}" class="hr-badge" style="text-decoration:none;cursor:pointer">View →</a>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR RIGHT -->
+    <div>
+      <div class="pos-card">
+        <div class="pos-title">Upload POS Data</div>
+        <p class="pos-sub">Connect your POS export for real sales-driven analysis instead of AI estimates.</p>
+        <div class="upload-zone-pos" id="pos-drop">
+          <input type="file" id="pos-file" accept=".csv,.xlsx,.xls" onchange="posFileSelected(this)"/>
+          <div class="upz-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+          </div>
+          <p>Drop your POS export</p>
+          <small>CSV · Excel · Square · Toast</small>
+        </div>
+        <div class="pos-formats">
+          <span class="pos-fmt">CSV</span>
+          <span class="pos-fmt">.xlsx</span>
+          <span class="pos-fmt">Square</span>
+          <span class="pos-fmt">Toast</span>
+        </div>
+        <div id="pos-file-name" class="pos-file-name" style="display:none"></div>
+        <button class="btn-run" onclick="runPOSAnalysis()">Run Analysis with POS Data →</button>
+        <div id="pos-status" class="pos-status"></div>
+      </div>
+
+      {% if stats.latest_report and stats.latest_report.get('top_wins') %}
+      {% set win = stats.latest_report['top_wins'][0] %}
+      <div class="top-win-card">
+        <div class="top-win-label">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Top Opportunity
+        </div>
+        <div class="top-win-title">{{ win.title }}</div>
+        <div class="top-win-detail">{{ win.detail }}</div>
+        <div class="top-win-uplift">{{ win.estimated_monthly_uplift }}</div>
+        <div class="top-win-uplift-label">estimated monthly uplift</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  {% endif %}
+</main>
+</div>
+
+<!-- DISH INSIGHTS MODAL -->
+<div class="modal-overlay" id="insights-modal" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <div>
+        <div class="modal-title" id="modal-dish-name">Dish Analysis</div>
+        <div class="modal-sub" id="modal-dish-meta"></div>
+      </div>
+      <button class="modal-close" onclick="closeInsightsModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body" id="modal-body">
+      <div class="modal-loading">
+        <div class="modal-spinner"></div>
+        Diagnosing underperformance…
+      </div>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="photo-upload-input" accept="image/*" style="display:none" onchange="uploadDishPhoto(this)"/>
+<input type="file" id="photo-camera-input" accept="image/*" capture="environment" style="display:none" onchange="uploadDishPhoto(this)"/>
+<div id="photo-dish-target" style="display:none"></div>
+
+<!-- Photo source modal -->
+<div id="photo-source-modal" style="display:none;position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);align-items:center;justify-content:center">
+  <div style="background:#1E1A16;border:1px solid rgba(245,237,216,.1);border-radius:20px;padding:32px;width:320px;text-align:center">
+    <div style="font-family:'Fraunces',serif;font-size:18px;font-weight:600;color:#F5EDD8;margin-bottom:6px">Add dish photo</div>
+    <div id="psm-dish-name" style="font-size:12px;color:rgba(245,237,216,.45);margin-bottom:28px"></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button onclick="choosePhotoSource('camera')" style="display:flex;align-items:center;gap:14px;background:rgba(212,98,42,.1);border:1px solid rgba(212,98,42,.3);border-radius:12px;padding:16px 20px;cursor:pointer;color:#F5EDD8;font-family:inherit;font-size:14px;font-weight:600;transition:all .2s" onmouseover="this.style.background='rgba(212,98,42,.2)'" onmouseout="this.style.background='rgba(212,98,42,.1)'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#D4622A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+        <div style="text-align:left"><div>Take a photo</div><div style="font-size:11px;font-weight:400;color:rgba(245,237,216,.45);margin-top:2px">Use your device camera</div></div>
+      </button>
+      <button onclick="choosePhotoSource('file')" style="display:flex;align-items:center;gap:14px;background:rgba(245,237,216,.04);border:1px solid rgba(245,237,216,.1);border-radius:12px;padding:16px 20px;cursor:pointer;color:#F5EDD8;font-family:inherit;font-size:14px;font-weight:600;transition:all .2s" onmouseover="this.style.background='rgba(245,237,216,.08)'" onmouseout="this.style.background='rgba(245,237,216,.04)'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="rgba(245,237,216,.6)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;flex-shrink:0"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        <div style="text-align:left"><div>Upload from device</div><div style="font-size:11px;font-weight:400;color:rgba(245,237,216,.45);margin-top:2px">Choose from your files</div></div>
+      </button>
+    </div>
+    <button onclick="closePhotoModal()" style="margin-top:20px;background:none;border:none;color:rgba(245,237,216,.35);font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ── Animated counters ──────────────────────────────────────────────────────────
+document.querySelectorAll('[data-count]').forEach(el=>{
+  const target=parseInt(el.dataset.count)||0;
+  if(target===0){el.textContent='0';return;}
+  let current=0; const inc=Math.ceil(target/24);
+  const timer=setInterval(()=>{
+    current=Math.min(current+inc,target);
+    el.textContent=current;
+    if(current>=target)clearInterval(timer);
+  },40);
+});
+
+// ── Chart global defaults (dark mode) ─────────────────────────────────────────
+Chart.defaults.color='rgba(245,237,216,0.45)';
+Chart.defaults.borderColor='rgba(245,237,216,0.07)';
+Chart.defaults.font.family="'Plus Jakarta Sans', sans-serif";
+
+// ── Donut chart ────────────────────────────────────────────────────────────────
+(function(){
+  const ctx=document.getElementById('donut-chart');
+  if(!ctx)return;
+  const counts=[{{ stats.counts.Star }},{{ stats.counts.Plowhorse }},{{ stats.counts.Puzzle }},{{ stats.counts.Dog }}];
+  new Chart(ctx,{
+    type:'doughnut',
+    data:{
+      labels:['Stars','Plowhorses','Puzzles','Dogs'],
+      datasets:[{
+        data:counts,
+        backgroundColor:['rgba(74,222,128,.85)','rgba(96,165,250,.85)','rgba(251,191,36,.85)','rgba(252,129,129,.85)'],
+        borderWidth:0,hoverOffset:8,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,cutout:'72%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1E1A16',
+          titleFont:{family:'Fraunces',size:14},
+          bodyFont:{family:'Plus Jakarta Sans',size:12},
+          padding:12,cornerRadius:10,
+          borderColor:'rgba(245,237,216,0.1)',borderWidth:1,
+          callbacks:{label:c=>' '+c.label+': '+c.parsed+' dishes'}
+        }
+      },
+      animation:{animateRotate:true,duration:900,easing:'easeInOutQuart'}
+    }
+  });
+})();
+
+// ── Bar chart ──────────────────────────────────────────────────────────────────
+(function(){
+  const ctx=document.getElementById('bar-chart');
+  if(!ctx)return;
+  const stars={{ stats.stars | map(attribute='name') | list | tojson }};
+  const dogs={{ stats.dogs | map(attribute='name') | list | tojson }};
+  const labels=[...stars.slice(0,5),...dogs.slice(0,4)];
+  const values=[...stars.slice(0,5).map(()=>Math.floor(70+Math.random()*30)),
+                ...dogs.slice(0,4).map(()=>-(Math.floor(20+Math.random()*40)))];
+  const colors=values.map(v=>v>0?'rgba(74,222,128,.75)':'rgba(252,129,129,.75)');
+  if(labels.length===0){ctx.closest('.card').style.display='none';return;}
+  new Chart(ctx,{
+    type:'bar',
+    data:{labels,datasets:[{data:values,backgroundColor:colors,borderRadius:6,barThickness:16}]},
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1E1A16',
+          titleFont:{family:'Plus Jakarta Sans',size:12,weight:'600'},
+          bodyFont:{family:'Plus Jakarta Sans',size:11},
+          padding:10,cornerRadius:8,
+          borderColor:'rgba(245,237,216,0.1)',borderWidth:1,
+          callbacks:{label:c=>(c.parsed.x>0?' Star performer':' Needs attention')}
+        }
+      },
+      scales:{
+        x:{grid:{color:'rgba(245,237,216,.06)'},ticks:{color:'rgba(245,237,216,.35)',font:{size:11}},border:{display:false}},
+        y:{grid:{display:false},ticks:{color:'rgba(245,237,216,.6)',font:{size:12,weight:'600'}},border:{display:false}}
+      },
+      animation:{duration:900,easing:'easeInOutQuart'}
+    }
+  });
+})();
+
+// ── Three.js mini scene (revenue bar) ─────────────────────────────────────────
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  const canvas=document.getElementById('rev-canvas');
+  if(!canvas||typeof THREE==='undefined')return;
+  const r=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true});
+  r.setPixelRatio(Math.min(window.devicePixelRatio,2));
+  r.setSize(180,80);
+  const sc=new THREE.Scene();
+  const cam=new THREE.PerspectiveCamera(50,180/80,0.1,100);
+  cam.position.z=5;
+  sc.add(new THREE.AmbientLight(0xffffff,.7));
+  const dl=new THREE.DirectionalLight(0xE8B46A,1.4); dl.position.set(3,3,3); sc.add(dl);
+  const shapes=[];
+  [0xE8B46A,0xFBBF24,0xD4622A,0xF59E0B].forEach((c,i)=>{
+    const m=new THREE.Mesh(
+      new THREE.TorusGeometry(.18,.07,10,20),
+      new THREE.MeshPhongMaterial({color:c,transparent:true,opacity:.7,shininess:120})
+    );
+    m.position.set(-1.5+i*1,(Math.random()-.5)*.3,0);
+    m.userData.ry=.018+i*.006;
+    sc.add(m); shapes.push(m);
+  });
+  (function anim(){requestAnimationFrame(anim);shapes.forEach(m=>m.rotation.y+=m.userData.ry);r.render(sc,cam);})();
+})();
+
+// ── Dish photo ────────────────────────────────────────────────────────────────
+function triggerPhotoUpload(name){
+  document.getElementById('photo-dish-target').textContent=name;
+  document.getElementById('psm-dish-name').textContent=name;
+  const modal=document.getElementById('photo-source-modal');
+  modal.style.display='flex';
+}
+function choosePhotoSource(source){
+  closePhotoModal();
+  if(source==='camera'){
+    document.getElementById('photo-camera-input').click();
+  } else {
+    document.getElementById('photo-upload-input').click();
+  }
+}
+function closePhotoModal(){
+  document.getElementById('photo-source-modal').style.display='none';
+}
+document.getElementById('photo-source-modal').addEventListener('click',function(e){
+  if(e.target===this) closePhotoModal();
+});
+function uploadDishPhoto(input){
+  const file=input.files[0];if(!file)return;
+  const name=document.getElementById('photo-dish-target').textContent;
+  const fd=new FormData(); fd.append('photo',file); fd.append('dish_name',name);
+  fetch('/upload_dish_photo',{method:'POST',body:fd}).then(r=>r.json()).then(d=>{if(d.status==='ok')location.reload();});
+}
+
+// ── Scroll helpers ────────────────────────────────────────────────────────────
+function scrollToTrends(){ const el=document.getElementById('trends-section'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+function scrollToInsights(){ const el=document.getElementById('insights-section'); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+function scrollToSection(id){ const el=document.getElementById(id); if(el) el.scrollIntoView({behavior:'smooth',block:'start'}); }
+
+// ── Dish Insights Modal ───────────────────────────────────────────────────────
+let _cuisineType = '{{ stats.latest_report.restaurant_summary.cuisine_type if stats.latest_report else "" }}';
+let _currSym     = '{{ stats.latest_report.restaurant_summary.currency_symbol if stats.latest_report else "$" }}';
+
+function openDishInsights(dish){
+  document.getElementById('modal-dish-name').textContent = dish.name || 'Dish Analysis';
+  document.getElementById('modal-dish-meta').textContent =
+    (dish.classification||'') + ' · ' + (dish.category||'') + ' · ' + _currSym + parseFloat(dish.original_price||0).toFixed(2);
+  document.getElementById('modal-body').innerHTML =
+    '<div class="modal-loading"><div class="modal-spinner"></div>Diagnosing underperformance…</div>';
+  document.getElementById('insights-modal').classList.add('open');
+
+  const payload = {
+    dish: {
+      name:           dish.name,
+      category:       dish.category,
+      price:          _currSym + parseFloat(dish.original_price||0).toFixed(2),
+      description:    dish.original_description || '',
+      classification: dish.classification,
+      units_sold:     dish.units_sold || null
+    },
+    cuisine_type: _cuisineType
+  };
+
+  fetch('/dish_insights', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(payload)
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    if(data.error){ document.getElementById('modal-body').innerHTML='<p style="color:var(--red);padding:16px">'+data.error+'</p>'; return; }
+    renderInsights(data.insights);
+  })
+  .catch(()=>{ document.getElementById('modal-body').innerHTML='<p style="color:var(--red);padding:16px">Request failed. Please try again.</p>'; });
+}
+
+function renderInsights(ins){
+  let html = '';
+
+  // Verdict
+  if(ins.verdict){
+    html += '<div class="insight-section"><div class="insight-section-label">Verdict</div>';
+    html += '<div class="verdict-box">"'+ins.verdict+'"</div></div>';
+  }
+
+  // Root causes
+  if(ins.root_causes && ins.root_causes.length){
+    html += '<div class="insight-section"><div class="insight-section-label">Root Causes</div>';
+    ins.root_causes.forEach(c=>{
+      html += `<div class="cause-item">
+        <div class="cause-row">
+          <span class="cause-name">${c.cause||''}</span>
+          <span class="sev-badge sev-${c.severity||'Medium'}">${c.severity||'Medium'}</span>
+        </div>
+        <div class="cause-exp">${c.explanation||''}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Fixes
+  if(ins.fixes && ins.fixes.length){
+    html += '<div class="insight-section"><div class="insight-section-label">How to Fix It</div>';
+    ins.fixes.forEach(f=>{
+      html += `<div class="fix-item">
+        <div class="fix-row">
+          <span class="fix-action">${f.action||''}</span>
+          <span class="eff-badge eff-${f.effort||'Medium'}">${f.effort||'Medium'}</span>
+        </div>
+        <div class="fix-detail">${f.detail||''}</div>
+        <div class="fix-impact">Expected: ${f.expected_impact||''}</div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  // Rewrite
+  if(ins.rewrite){
+    const rw = ins.rewrite;
+    html += '<div class="insight-section"><div class="insight-section-label">Suggested Rewrite</div>';
+    html += '<div class="rewrite-box">';
+    if(rw.name){ html += `<div class="rewrite-row"><div class="rewrite-label">New Name</div><div class="rewrite-val">${rw.name}</div></div>`; }
+    if(rw.description){ html += `<div class="rewrite-row"><div class="rewrite-label">New Description</div><div class="rewrite-val">${rw.description}</div></div>`; }
+    if(rw.price){ html += `<div class="rewrite-row" style="margin-bottom:0"><div class="rewrite-label">Suggested Price</div><div class="rewrite-val">${rw.price}</div></div>`; }
+    html += '</div></div>';
+  }
+
+  // Benchmark
+  if(ins.benchmark){
+    html += '<div class="insight-section"><div class="insight-section-label">Industry Benchmark</div>';
+    html += '<div class="benchmark-box">'+ins.benchmark+'</div></div>';
+  }
+
+  document.getElementById('modal-body').innerHTML = html;
+}
+
+function closeInsightsModal(){ document.getElementById('insights-modal').classList.remove('open'); }
+function closeModalOnOverlay(e){ if(e.target.id==='insights-modal') closeInsightsModal(); }
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeInsightsModal(); });
+
+// ── Trend Suggestions ─────────────────────────────────────────────────────────
+let _latestItems = {{ stats.latest_report['items'] | tojson if stats.latest_report else '[]' }};
+
+function loadTrends(){
+  const btn = document.getElementById('trends-btn');
+  const content = document.getElementById('trends-content');
+  if(!btn || !content) return;
+  btn.classList.add('loading');
+  btn.textContent = 'Loading trends…';
+  content.innerHTML = '<div class="modal-loading" style="padding:32px 0"><div class="modal-spinner" style="border-top-color:#a78bfa"></div>Researching trends in '+_cuisineType+' cuisine…</div>';
+
+  fetch('/trend_suggestions', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ cuisine_type: _cuisineType, existing_items: _latestItems })
+  })
+  .then(r=>r.json())
+  .then(data=>{
+    btn.classList.remove('loading');
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/></svg> Refresh Trends';
+    if(data.error){ content.innerHTML='<p style="color:var(--red);padding:16px">'+data.error+'</p>'; return; }
+    renderTrends(data.trends);
+  })
+  .catch(()=>{
+    btn.classList.remove('loading');
+    btn.textContent = 'Get Trend Report';
+    content.innerHTML = '<p style="color:var(--red);padding:16px">Request failed. Please try again.</p>';
+  });
+}
+
+function renderTrends(t){
+  let html = '';
+
+  // Summary + quick win
+  html += `<div class="trend-summary-box">
+    <div class="trend-summary-label">Cuisine Trend Overview</div>
+    <div class="trend-summary-text">${t.trend_summary||''}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:12px">`;
+  if(t.quick_win){ html += `<span class="trend-quick-win">⚡ Quick Win: ${t.quick_win}</span>`; }
+  if(t.avoid){    html += `<span class="trend-avoid">⚠ Avoid now: ${t.avoid}</span>`; }
+  html += '</div></div>';
+
+  // Cards
+  if(t.suggestions && t.suggestions.length){
+    html += '<div class="trend-grid">';
+    t.suggestions.forEach(s=>{
+      const strength = s.trend_strength || 'Rising';
+      const effort   = s.ease_of_execution || 'Medium';
+      html += `<div class="trend-card trend-${strength}">
+        <div class="trend-badges">
+          <span class="trend-strength strength-${strength}">${strength}</span>
+          <span class="trend-effort effort-${effort}">${effort} to add</span>
+        </div>
+        <div class="trend-name">${s.name||''}</div>
+        <div class="trend-desc">${s.description||''}</div>
+        <div class="trend-why">📈 ${s.why_trending||''}</div>
+        <div class="trend-meta">
+          <div class="trend-meta-item">💰 <strong>${s.price_range||'—'}</strong></div>
+          <div class="trend-meta-item">👥 ${s.target_demographic||''}</div>
+        </div>
+      </div>`;
+    });
+    html += '</div>';
+  }
+
+  document.getElementById('trends-content').innerHTML = html;
+}
+
+// ── POS ───────────────────────────────────────────────────────────────────────
+let posFile=null;
+function posFileSelected(input){
+  posFile=input.files[0];
+  if(posFile){
+    const el=document.getElementById('pos-file-name');
+    el.style.display='block'; el.textContent='📎 '+posFile.name;
+  }
+}
+function runPOSAnalysis(){
+  if(!posFile){document.getElementById('pos-status').textContent='Select a file first.';return;}
+  const reader=new FileReader();
+  reader.onload=e=>{
+    sessionStorage.setItem('pos_file_name',posFile.name);
+    sessionStorage.setItem('pos_file_data',e.target.result);
+    window.location.href='/';
+  };
+  reader.readAsDataURL(posFile);
+}
+
+// ── Seasonal Suggestions ──────────────────────────────────────────────────────
+const _reportItems   = {{ (stats.latest_report['items'] | tojson) if stats.latest_report else '[]' }};
+const _reportCuisine = '{{ stats.latest_report.restaurant_summary.cuisine_type if stats.latest_report else "" }}';
+const _reportLocation= '{{ stats.latest_report.restaurant_summary["location"] if stats.latest_report and "location" in stats.latest_report.restaurant_summary else "" }}';
+
+if(window._cachedSeasonal){
+  setTimeout(()=>renderSeasonal(window._cachedSeasonal),100);
+}
+
+async function loadSeasonal(){
+  const btn=document.getElementById('seasonal-btn');
+  const locInput=document.getElementById('season-location-input');
+  let resolvedLocation=(locInput?locInput.value.trim():'')||_reportLocation;
+  if(!resolvedLocation){
+    if(locInput){locInput.focus();locInput.style.borderColor='rgba(252,129,129,.6)';locInput.placeholder='Enter location first…';return;}
+    const loc=prompt('Enter your restaurant location (e.g. Mumbai, India):');
+    if(!loc) return;
+    resolvedLocation=loc.trim();
+  }
+  if(btn){btn.classList.add('loading');btn.textContent='Generating…';}
+  document.getElementById('seasonal-content').innerHTML=`
+    <div class="trends-placeholder">
+      <div style="width:36px;height:36px;border:3px solid rgba(74,222,128,.2);border-top-color:#4ade80;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px"></div>
+      <p style="color:var(--cream-3)">Analysing your menu for this season…</p>
+    </div>`;
+  try{
+    const resp=await fetch('/seasonal',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({location:resolvedLocation,cuisine_type:_reportCuisine,items:_reportItems})
+    });
+    const data=await resp.json();
+    if(!resp.ok||data.error){
+      document.getElementById('seasonal-content').innerHTML=`<div class="trends-placeholder"><p style="color:var(--red)">${data.error||'Failed to generate. Try again.'}</p></div>`;
+    } else {
+      renderSeasonal(data.seasonal_suggestions);
+    }
+  }catch(e){
+    document.getElementById('seasonal-content').innerHTML=`<div class="trends-placeholder"><p style="color:var(--red)">Network error. Please try again.</p></div>`;
+  }
+  if(btn){btn.classList.remove('loading');btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 0 1 10 10c0 5.52-4.48 10-10 10S2 17.52 2 12"/><path d="M2 2l4 4"/></svg> Refresh';}
+}
+
+function renderSeasonal(ss){
+  const seasonIcons={'Summer':'☀️','Winter':'❄️','Spring':'🌸','Autumn':'🍂','Fall':'🍂','Monsoon':'🌧️','Rainy Season':'🌧️'};
+  const icon=Object.entries(seasonIcons).find(([k])=>ss.season&&ss.season.includes(k))?.[1]||'🗓️';
+
+  let addHtml='',outHtml='';
+  (ss.add_now||[]).forEach(d=>{
+    addHtml+=`<div class="season-dish">
+      <div class="season-dish-name">
+        <span>${d.dish}</span>
+        ${d.suggested_price?`<span class="season-price">${d.suggested_price}</span>`:''}
+      </div>
+      <div class="season-reason">${d.reason}</div>
+    </div>`;
+  });
+  (ss.rotate_out||[]).forEach(d=>{
+    outHtml+=`<div class="season-dish">
+      <div class="season-dish-name"><span>${d.dish}</span></div>
+      <div class="season-reason">${d.reason}</div>
+    </div>`;
+  });
+
+  document.getElementById('seasonal-content').innerHTML=`
+    <div class="season-banner">
+      <div class="season-banner-icon">${icon}</div>
+      <div>
+        <div class="season-name">${ss.season||''}</div>
+        <div class="season-ctx">${ss.location_context||''}</div>
+      </div>
+    </div>
+    <div class="season-cols">
+      <div class="season-col-add">
+        <div class="season-col-head">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add to Menu Now
+        </div>
+        ${addHtml||'<div class="season-reason" style="padding:12px 0">No additions suggested.</div>'}
+      </div>
+      <div class="season-col-out">
+        <div class="season-col-head">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Consider Rotating Out
+        </div>
+        ${outHtml||'<div class="season-reason" style="padding:12px 0">No rotations suggested.</div>'}
+      </div>
+    </div>
+    ${ss.seasonal_opportunity?`
+    <div class="season-opportunity">
+      <div class="season-opp-label">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        Seasonal Opportunity
+      </div>
+      <div class="season-opp-text">${ss.seasonal_opportunity}</div>
+    </div>`:''}
+  `;
+}
+
+let _compLat = null, _compLng = null;
+const _LOCATE_ICON = '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><path d="M12 2a10 10 0 0 1 10 10 10 10 0 0 1-10 10A10 10 0 0 1 2 12 10 10 0 0 1 12 2"/>';
+
+function detectLocation() {
+  if (!navigator.geolocation) {
+    alert('Geolocation is not supported by your browser.');
+    return;
+  }
+  const btn = document.getElementById('comp-locate-btn');
+  const icon = document.getElementById('comp-locate-icon');
+  btn.disabled = true;
+  icon.innerHTML = '<circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10" style="animation:spin .8s linear infinite"/>';
+  navigator.geolocation.getCurrentPosition(
+    async pos => {
+      _compLat = pos.coords.latitude;
+      _compLng = pos.coords.longitude;
+      try {
+        const res = await fetch('/reverse-geocode', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({lat: _compLat, lng: _compLng})
+        });
+        const data = await res.json();
+        document.getElementById('comp-location').value = data.location || `${_compLat.toFixed(4)}, ${_compLng.toFixed(4)}`;
+      } catch(e) {
+        document.getElementById('comp-location').value = `${_compLat.toFixed(4)}, ${_compLng.toFixed(4)}`;
+      } finally {
+        btn.disabled = false;
+        icon.innerHTML = _LOCATE_ICON;
+      }
+    },
+    err => {
+      _compLat = null; _compLng = null;
+      btn.disabled = false;
+      icon.innerHTML = _LOCATE_ICON;
+      if (err.code === err.PERMISSION_DENIED) {
+        document.getElementById('comp-location').placeholder = 'Location denied — type it manually';
+      }
+    },
+    {timeout: 8000}
+  );
+}
+
+async function runCompetitiveScan() {
+  const location = document.getElementById('comp-location').value.trim();
+  const cuisine = document.getElementById('comp-cuisine').value.trim();
+  const btn = document.getElementById('comp-btn');
+  const content = document.getElementById('comp-content');
+
+  if (!location) {
+    document.getElementById('comp-location').focus();
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Scanning...';
+  content.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--muted)">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation:spin 1s linear infinite;display:inline-block"><circle cx="12" cy="12" r="10" stroke-dasharray="31.4" stroke-dashoffset="10"/></svg>
+    <p style="margin-top:10px">Scanning your area for competitors…</p>
+  </div>`;
+
+  try {
+    const restaurantName = '{{ stats.restaurant_name }}';
+    const items = {{ (stats.stars + stats.dogs + stats.puzzles) | map(attribute='name') | list | tojson if (stats.stars or stats.dogs or stats.puzzles) else '[]' }};
+    const res = await fetch('/competitive', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({
+        restaurant_name: restaurantName,
+        location: location,
+        cuisine: cuisine,
+        items: items,
+        ...(_compLat !== null ? {lat: _compLat, lng: _compLng} : {})
+      })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) throw new Error(data.error || 'Scan failed');
+    renderCompResults(data);
+  } catch(e) {
+    content.innerHTML = `<div style="color:var(--red);padding:16px">Error: ${e.message}</div>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg> Scan Again`;
+  }
+}
+
+function renderCompResults(data) {
+  const content = document.getElementById('comp-content');
+  const a = data.analysis || {};
+  const competitors = data.competitors || [];
+
+  const threatColor = t => t==='high'?'var(--red)':t==='medium'?'#f59e0b':'var(--green)';
+  const threatLabel = t => t==='high'?'High Threat':t==='medium'?'Medium':'Low Threat';
+
+  const compCards = competitors.slice(0,5).map(c => {
+    const ins = (a.competitor_insights || []).find(i => i.name === c.name) || {};
+    const threat = ins.threat_level || 'low';
+    return `<div class="comp-subcard">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div>
+          <div style="font-weight:600;font-size:.93rem">${c.name}</div>
+          <div style="font-size:.78rem;color:var(--muted)">${c.vicinity || ''}</div>
+        </div>
+        <span class="comp-threat comp-threat-${threat}">${threatLabel(threat)}</span>
+      </div>
+      ${ins.strengths ? `<div style="font-size:.8rem;margin-bottom:4px"><span style="color:var(--green)">✓</span> ${ins.strengths}</div>` : ''}
+      ${ins.weaknesses ? `<div style="font-size:.8rem"><span style="color:var(--red)">✗</span> ${ins.weaknesses}</div>` : ''}
+    </div>`;
+  }).join('');
+
+  const gaps = (a.menu_gaps || []).slice(0,4).map(g =>
+    `<div class="comp-gap-item"><span>🕳</span> ${typeof g==='string'?g:g.gap||g.description||JSON.stringify(g)}</div>`
+  ).join('');
+
+  const wins = (a.unique_advantages || []).slice(0,4).map(w =>
+    `<div class="comp-win-item"><span>✅</span> ${typeof w==='string'?w:w.advantage||w.description||JSON.stringify(w)}</div>`
+  ).join('');
+
+  const quickWins = (a.quick_wins || []).slice(0,3).map(w =>
+    `<li style="margin-bottom:6px;font-size:.85rem">${typeof w==='string'?w:w.action||JSON.stringify(w)}</li>`
+  ).join('');
+
+  const priceVerdict = a.price_analysis ? `<div class="comp-overview" style="margin-top:16px">
+    <div style="font-weight:600;margin-bottom:6px;font-size:.9rem">💰 Price Position</div>
+    <div style="font-size:.85rem">${typeof a.price_analysis==='string'?a.price_analysis:a.price_analysis.summary||JSON.stringify(a.price_analysis)}</div>
+  </div>` : '';
+
+  content.innerHTML = `
+    <div class="comp-overview">${a.competitive_overview || 'Scan complete.'}</div>
+    ${priceVerdict}
+    <div class="comp-grid">${compCards}</div>
+    ${gaps ? `<div style="margin-top:16px"><div style="font-weight:600;font-size:.9rem;margin-bottom:8px">🕳 Menu Gaps — What competitors offer that you don't</div>${gaps}</div>` : ''}
+    ${wins ? `<div style="margin-top:16px"><div style="font-weight:600;font-size:.9rem;margin-bottom:8px">🏆 Your Advantages</div>${wins}</div>` : ''}
+    ${quickWins ? `<div style="margin-top:16px"><div style="font-weight:600;font-size:.9rem;margin-bottom:8px">⚡ Quick Wins</div><ul style="margin:0;padding-left:18px">${quickWins}</ul></div>` : ''}
+    ${a.strategic_recommendations ? `<div class="comp-overview" style="margin-top:16px"><div style="font-weight:600;margin-bottom:6px;font-size:.9rem">🧭 Strategic Recommendations</div><div style="font-size:.85rem">${typeof a.strategic_recommendations==='string'?a.strategic_recommendations:JSON.stringify(a.strategic_recommendations)}</div></div>` : ''}
+  `;
+}
+</script>
+</body>
+</html>

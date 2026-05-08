@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Pan Toss Animation Test</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{background:#0D0B09;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;font-family:sans-serif;color:#F5EDD8}
+    h1{position:fixed;top:30px;left:50%;transform:translateX(-50%);font-size:14px;opacity:.4;letter-spacing:2px;text-transform:uppercase}
+
+    /* ── SCENE ── */
+    .scene{
+      position:relative;
+      width:480px;height:540px;
+    }
+
+    /* ── FLAME GLOW ── */
+    .flame{
+      position:absolute;
+      bottom:72px;left:50%;
+      transform:translateX(-50%);
+      width:90px;height:24px;
+      background:radial-gradient(ellipse,#FF8C00 0%,#D4622A 40%,transparent 75%);
+      border-radius:50%;
+      animation:flicker 0.18s ease-in-out infinite alternate;
+      filter:blur(4px);
+    }
+    @keyframes flicker{
+      0%{opacity:.8;transform:translateX(-50%) scaleX(1)}
+      100%{opacity:1;transform:translateX(-50%) scaleX(1.12)}
+    }
+
+    /* ── PAN ── */
+    .pan-wrap{
+      position:absolute;
+      bottom:40px;left:50%;
+      transform:translateX(-50%);
+      width:180px;
+    }
+    /* handle */
+    .pan-handle{
+      position:absolute;
+      right:-68px;bottom:14px;
+      width:72px;height:10px;
+      background:linear-gradient(90deg,#2a2a2a,#1a1a1a);
+      border-radius:0 6px 6px 0;
+    }
+    /* body */
+    .pan-body{
+      width:180px;height:56px;
+      background:linear-gradient(180deg,#252525 0%,#1a1a1a 60%,#111 100%);
+      border-radius:0 0 50% 50% / 0 0 30px 30px;
+      border:2px solid #333;
+      position:relative;
+      box-shadow:0 6px 24px rgba(0,0,0,.7), inset 0 -4px 12px rgba(212,98,42,.15);
+    }
+    /* rim highlight */
+    .pan-body::before{
+      content:'';position:absolute;top:-3px;left:10px;right:10px;height:6px;
+      background:linear-gradient(180deg,#3a3a3a,#222);
+      border-radius:50%;
+    }
+    /* contents glow */
+    .pan-body::after{
+      content:'';position:absolute;inset:6px 12px;bottom:4px;
+      background:radial-gradient(ellipse,rgba(212,98,42,.25),transparent 70%);
+      border-radius:50%;
+      animation:contentGlow 1.2s ease-in-out infinite alternate;
+    }
+    @keyframes contentGlow{
+      0%{opacity:.6} 100%{opacity:1}
+    }
+
+    /* ── STEAM ── */
+    .steam{
+      position:absolute;
+      bottom:96px;left:50%;
+      transform:translateX(-50%);
+      width:100px;
+      pointer-events:none;
+    }
+    .steam-wisp{
+      position:absolute;
+      bottom:0;
+      width:6px;border-radius:50%;
+      background:rgba(245,237,216,.12);
+      filter:blur(5px);
+      animation:steamRise var(--d,2.4s) ease-out var(--delay,0s) infinite;
+    }
+    .s1{left:20%;width:8px;--d:2.2s;--delay:0s;--tx:-6px}
+    .s2{left:40%;width:6px;--d:2.8s;--delay:.4s;--tx:4px}
+    .s3{left:60%;width:10px;--d:2.4s;--delay:.9s;--tx:-3px}
+    .s4{left:75%;width:5px;--d:3s;--delay:1.3s;--tx:7px}
+    .s5{left:10%;width:7px;--d:2.6s;--delay:1.8s;--tx:-5px}
+
+    @keyframes steamRise{
+      0%{height:0;opacity:0;transform:translateX(0) translateY(0)}
+      15%{opacity:.7}
+      100%{height:60px;opacity:0;transform:translateX(var(--tx,0px)) translateY(-80px)}
+    }
+
+    /* ── INGREDIENTS ── */
+    .ing{
+      position:absolute;
+      border-radius:50%;
+      bottom:80px;
+      left:50%;
+      animation:toss var(--dur,1.8s) cubic-bezier(.25,.46,.45,.94) var(--delay,0s) infinite;
+      transform-origin:center;
+      opacity:0;
+    }
+
+    @keyframes toss{
+      0%{
+        transform:translate(calc(-50% + var(--sx,0px)), 0) rotate(0deg) scale(var(--s,1));
+        opacity:0;
+      }
+      8%{opacity:1}
+      45%{
+        transform:translate(calc(-50% + var(--tx,0px)), calc(var(--ty,-180px))) rotate(var(--rot,180deg)) scale(calc(var(--s,1) * 0.85));
+        opacity:0.95;
+      }
+      85%{opacity:.9}
+      100%{
+        transform:translate(calc(-50% + var(--sx,0px)), 0) rotate(calc(var(--rot,180deg) * 2)) scale(var(--s,1));
+        opacity:0;
+      }
+    }
+
+    /* Tomatoes — red circles */
+    .t1{width:14px;height:14px;background:radial-gradient(circle at 35% 35%,#FF6B6B,#C0392B);box-shadow:0 0 6px rgba(192,57,43,.4);--tx:-55px;--ty:-200px;--rot:260deg;--dur:2.1s;--delay:0s;--s:1;--sx:10px}
+    .t2{width:10px;height:10px;background:radial-gradient(circle at 35% 35%,#FF6B6B,#C0392B);--tx:40px;--ty:-170px;--rot:200deg;--dur:1.9s;--delay:.7s;--s:.8;--sx:-5px}
+    .t3{width:12px;height:12px;background:radial-gradient(circle at 35% 35%,#FF6B6B,#C0392B);--tx:-20px;--ty:-230px;--rot:320deg;--dur:2.3s;--delay:1.4s;--s:.9;--sx:20px}
+
+    /* Peppers — green/orange irregular */
+    .p1{width:18px;height:10px;background:radial-gradient(ellipse at 40% 40%,#6BCB77,#2D6A4F);border-radius:60% 40% 60% 40%;--tx:30px;--ty:-190px;--rot:240deg;--dur:2s;--delay:.3s;--s:1;--sx:-15px}
+    .p2{width:14px;height:8px;background:radial-gradient(ellipse at 40% 40%,#F4A261,#E76F51);border-radius:50% 60% 40% 50%;--tx:-45px;--ty:-160px;--rot:180deg;--dur:2.2s;--delay:1s;--s:.9;--sx:5px}
+    .p3{width:16px;height:9px;background:radial-gradient(ellipse at 40% 40%,#6BCB77,#2D6A4F);border-radius:40% 60% 50% 40%;--tx:60px;--ty:-210px;--rot:300deg;--dur:1.8s;--delay:1.7s;--s:1.1;--sx:-20px}
+
+    /* Garlic — white/cream lumps */
+    .g1{width:12px;height:14px;background:radial-gradient(circle at 40% 35%,#F5EDD8,#C9B99A);border-radius:55% 45% 55% 45%;--tx:-35px;--ty:-220px;--rot:150deg;--dur:2.4s;--delay:.5s;--s:.9;--sx:0px}
+    .g2{width:10px;height:12px;background:radial-gradient(circle at 40% 35%,#F5EDD8,#C9B99A);border-radius:45% 55% 45% 55%;--tx:25px;--ty:-185px;--rot:210deg;--dur:2s;--delay:1.3s;--s:.8;--sx:-10px}
+
+    /* Bread chunks — brown irregular */
+    .b1{width:22px;height:14px;background:radial-gradient(ellipse at 45% 40%,#D4A574,#8B5E3C);border-radius:45% 55% 40% 60% / 55% 45% 60% 40%;--tx:-70px;--ty:-250px;--rot:280deg;--dur:2.6s;--delay:.2s;--s:1;--sx:15px}
+    .b2{width:18px;height:12px;background:radial-gradient(ellipse at 45% 40%,#D4A574,#8B5E3C);border-radius:60% 40% 55% 45% / 40% 60% 45% 55%;--tx:50px;--ty:-240px;--rot:320deg;--dur:2.2s;--delay:1.1s;--s:.85;--sx:-25px}
+
+    /* Spice particles — tiny golden dots */
+    .sp{
+      width:4px;height:4px;background:#E8B46A;
+      border-radius:50%;
+      box-shadow:0 0 4px #E8B46A;
+      animation:spice var(--dur,1.4s) ease-out var(--delay,0s) infinite;
+      position:absolute;bottom:85px;left:50%;opacity:0;
+    }
+    @keyframes spice{
+      0%{transform:translate(-50%,0) scale(1);opacity:0}
+      10%{opacity:1}
+      100%{transform:translate(calc(-50% + var(--tx,0px)),var(--ty,-120px)) scale(0.3);opacity:0}
+    }
+    .sp1{--tx:-80px;--ty:-140px;--dur:1.2s;--delay:.1s}
+    .sp2{--tx:70px;--ty:-160px;--dur:1.5s;--delay:.3s}
+    .sp3{--tx:-30px;--ty:-200px;--dur:1.3s;--delay:.6s}
+    .sp4{--tx:90px;--ty:-130px;--dur:1.1s;--delay:.9s}
+    .sp5{--tx:-60px;--ty:-180px;--dur:1.4s;--delay:1.2s}
+    .sp6{--tx:20px;--ty:-220px;--dur:1.6s;--delay:.05s}
+    .sp7{--tx:-100px;--ty:-150px;--dur:1.3s;--delay:1.5s}
+    .sp8{--tx:55px;--ty:-200px;--dur:1.2s;--delay:.75s}
+  </style>
+</head>
+<body>
+  <h1>Pan Toss — CSS Animation Preview</h1>
+
+  <div class="scene">
+
+    <!-- Spice particles -->
+    <div class="sp sp1"></div>
+    <div class="sp sp2"></div>
+    <div class="sp sp3"></div>
+    <div class="sp sp4"></div>
+    <div class="sp sp5"></div>
+    <div class="sp sp6"></div>
+    <div class="sp sp7"></div>
+    <div class="sp sp8"></div>
+
+    <!-- Ingredients -->
+    <div class="ing t1"></div>
+    <div class="ing t2"></div>
+    <div class="ing t3"></div>
+    <div class="ing p1"></div>
+    <div class="ing p2"></div>
+    <div class="ing p3"></div>
+    <div class="ing g1"></div>
+    <div class="ing g2"></div>
+    <div class="ing b1"></div>
+    <div class="ing b2"></div>
+
+    <!-- Steam -->
+    <div class="steam">
+      <div class="steam-wisp s1"></div>
+      <div class="steam-wisp s2"></div>
+      <div class="steam-wisp s3"></div>
+      <div class="steam-wisp s4"></div>
+      <div class="steam-wisp s5"></div>
+    </div>
+
+    <!-- Pan -->
+    <div class="pan-wrap">
+      <div class="pan-handle"></div>
+      <div class="pan-body"></div>
+    </div>
+
+    <!-- Flame -->
+    <div class="flame"></div>
+
+  </div>
+</body>
+</html>

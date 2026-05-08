@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>MenuEdge — Restaurant Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,400&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --bg:#0D0B09;--surface:#161412;--surface-2:#1E1A16;
+      --gold:#E8B46A;--gold-pale:rgba(232,180,106,0.1);--gold-border:rgba(232,180,106,0.22);
+      --terra:#D4622A;--terra-glow:rgba(212,98,42,0.35);
+      --cream:#F5EDD8;--cream-2:rgba(245,237,216,0.62);--cream-3:rgba(245,237,216,0.32);
+      --border:rgba(245,237,216,0.07);--border-2:rgba(245,237,216,0.13);
+      --red:#f87171;--green:#4ade80;
+    }
+    html,body{min-height:100%;font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--cream)}
+
+    /* ── LAYOUT ── */
+    .layout{display:flex;min-height:100vh}
+    aside{
+      width:240px;flex-shrink:0;background:var(--surface);
+      border-right:1px solid var(--border);
+      display:flex;flex-direction:column;padding:24px 16px;
+      position:sticky;top:0;height:100vh;overflow-y:auto;
+    }
+    .brand{display:flex;align-items:center;gap:10px;margin-bottom:32px;padding:0 6px}
+    .brand-name{font-family:'Fraunces',serif;font-size:16px;font-weight:700;color:var(--cream);letter-spacing:3px}
+    .brand-mark{width:6px;height:6px;background:var(--terra);border-radius:50%;box-shadow:0 0 10px var(--terra-glow);animation:pulse 2s ease-in-out infinite}
+    @keyframes pulse{0%,100%{box-shadow:0 0 8px var(--terra-glow)}50%{box-shadow:0 0 18px var(--terra-glow)}}
+    .nav-section{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--cream-3);padding:0 10px;margin:18px 0 8px}
+    .nav-item{
+      display:flex;align-items:center;gap:11px;padding:9px 10px;border-radius:9px;
+      font-size:13px;font-weight:500;color:var(--cream-2);text-decoration:none;
+      transition:all .18s;margin-bottom:2px;border:1px solid transparent;
+    }
+    .nav-item:hover{background:rgba(255,255,255,.05);color:var(--cream)}
+    .nav-item.active{background:var(--gold-pale);color:var(--gold);border-color:var(--gold-border)}
+    .nav-item svg{width:16px;height:16px;flex-shrink:0;opacity:.75}
+    .nav-item.active svg{opacity:1}
+    .sb-spacer{flex:1}
+    .sb-rest{
+      background:rgba(255,255,255,.04);border:1px solid var(--gold-border);
+      border-radius:12px;padding:12px 14px;margin-bottom:10px;
+      text-decoration:none;display:block;
+    }
+    .sb-rest-name{font-size:13px;font-weight:700;color:var(--cream);line-height:1.2;margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sb-rest-sub{font-size:11px;color:var(--gold)}
+    .sb-logout{
+      display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:9px;
+      font-size:13px;font-weight:500;color:var(--cream-3);text-decoration:none;transition:all .18s;
+    }
+    .sb-logout:hover{color:var(--red);background:rgba(252,129,129,.07)}
+
+    /* ── MAIN ── */
+    .main{flex:1;padding:48px 56px;max-width:860px}
+    .page-eyebrow{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--terra);margin-bottom:10px}
+    .page-title{font-family:'Fraunces',serif;font-size:34px;font-weight:700;line-height:1.1;margin-bottom:6px}
+    .page-sub{font-size:15px;color:var(--cream-2);margin-bottom:40px}
+
+    /* ── CARDS ── */
+    .card{background:var(--surface);border:1px solid var(--border-2);border-radius:16px;padding:28px 32px;margin-bottom:20px}
+    .card-title{font-family:'Fraunces',serif;font-size:18px;font-weight:600;margin-bottom:4px}
+    .card-sub{font-size:13px;color:var(--cream-3);margin-bottom:24px}
+    .divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+
+    /* ── STATS ROW ── */
+    .stats-row{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:20px}
+    .stat-box{background:var(--surface-2);border:1px solid var(--border);border-radius:12px;padding:18px 20px}
+    .stat-val{font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:var(--gold);line-height:1}
+    .stat-lbl{font-size:11px;color:var(--cream-3);text-transform:uppercase;letter-spacing:.8px;margin-top:5px}
+
+    /* ── FORM ── */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .field{display:flex;flex-direction:column;gap:7px}
+    .field.full{grid-column:1/-1}
+    label{font-size:12px;font-weight:600;color:var(--cream-2);letter-spacing:.2px}
+    input[type=text],input[type=email],input[type=tel],input[type=password],select{
+      background:rgba(255,255,255,.05);border:1px solid var(--border-2);border-radius:10px;
+      padding:11px 14px;font-size:14px;font-family:'Plus Jakarta Sans',sans-serif;
+      color:var(--cream);outline:none;transition:all .2s;width:100%;
+    }
+    input:focus,select:focus{border-color:rgba(232,180,106,.45);background:rgba(255,255,255,.08);box-shadow:0 0 0 3px rgba(232,180,106,.07)}
+    input::placeholder{color:var(--cream-3)}
+    input[readonly]{opacity:.5;cursor:not-allowed}
+    select option{background:#1E1A16;color:var(--cream)}
+
+    /* ── BUTTONS ── */
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:10px;font-size:14px;font-weight:700;font-family:'Plus Jakarta Sans',sans-serif;cursor:pointer;border:none;transition:all .2s;text-decoration:none}
+    .btn-primary{background:linear-gradient(135deg,var(--terra),#E8731A);color:#fff;box-shadow:0 4px 20px rgba(212,98,42,.28)}
+    .btn-primary:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(212,98,42,.4)}
+    .btn-outline{background:transparent;border:1px solid var(--border-2);color:var(--cream-2)}
+    .btn-outline:hover{border-color:var(--gold-border);color:var(--cream)}
+    .btn-sm{padding:8px 16px;font-size:13px}
+
+    /* ── ALERTS ── */
+    .alert{display:flex;align-items:center;gap:10px;padding:12px 16px;border-radius:10px;font-size:13px;margin-bottom:20px}
+    .alert-success{background:rgba(26,122,60,.12);border:1px solid rgba(74,222,128,.2);color:var(--green)}
+    .alert-error{background:rgba(212,98,42,.1);border:1px solid rgba(212,98,42,.22);color:#FDBA74}
+
+    /* ── PLAN BADGE ── */
+    .plan-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 14px;border-radius:20px;font-size:12px;font-weight:700;letter-spacing:.5px}
+    .badge-active{background:rgba(26,122,60,.2);color:var(--green);border:1px solid rgba(74,222,128,.25)}
+    .badge-inactive{background:rgba(255,255,255,.06);color:var(--cream-3);border:1px solid var(--border)}
+    .progress-bar{background:rgba(255,255,255,.07);border-radius:99px;height:5px;margin-top:10px;overflow:hidden;max-width:200px}
+    .progress-fill{height:100%;background:linear-gradient(90deg,var(--terra),var(--gold));border-radius:99px}
+
+    /* ── AVATAR ── */
+    .avatar-row{display:flex;align-items:center;gap:20px;margin-bottom:24px}
+    .avatar{width:64px;height:64px;border-radius:18px;background:linear-gradient(135deg,#271007,#3a1a08);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-size:24px;font-weight:700;color:var(--gold);flex-shrink:0}
+    .avatar-info{flex:1}
+    .avatar-name{font-family:'Fraunces',serif;font-size:20px;font-weight:700;margin-bottom:4px}
+    .avatar-email{font-size:13px;color:var(--cream-3)}
+
+    @media(max-width:768px){aside{display:none}.main{padding:28px 20px}.form-grid{grid-template-columns:1fr}.stats-row{grid-template-columns:1fr 1fr}}
+  </style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<aside>
+  <a href="/home" class="brand" style="text-decoration:none">
+    <span class="brand-name">MENUEDGE</span>
+    <div class="brand-mark"></div>
+  </a>
+
+  <div class="nav-section">Main</div>
+  <a href="/dashboard" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+    Dashboard
+  </a>
+  <a href="/menu" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    Analyse Menu
+  </a>
+
+  <div class="nav-section">Tools</div>
+  <a href="/dashboard#trends" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Trend Opportunities
+  </a>
+  <a href="/dashboard#insights" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+    Dish Insights
+  </a>
+  <a href="/dashboard#seasonal" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/></svg>
+    Seasonal
+  </a>
+  <a href="/dashboard#competition" class="nav-item">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+    Competition Scan
+  </a>
+
+  <div class="sb-spacer"></div>
+
+  <a href="/profile" class="sb-rest">
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div class="sb-rest-name">{{ user.restaurant_name or 'Your Restaurant' }}</div>
+        <div class="sb-rest-sub">Profile &amp; Settings</div>
+      </div>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(232,180,106,0.6)" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+    </div>
+  </a>
+  <a href="/logout" class="sb-logout">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+    Sign out
+  </a>
+</aside>
+
+<!-- ── MAIN ── -->
+<main class="main">
+  <div class="page-eyebrow">Account</div>
+  <h1 class="page-title">Restaurant Profile</h1>
+  <p class="page-sub">Manage your restaurant info, subscription, and account settings.</p>
+
+  <!-- STATS -->
+  {% set pct = ((used / plan_limit * 100) | round | int) if plan_limit else 0 %}
+  {% set left = (plan_limit - used) if plan_limit else 0 %}
+
+  <div class="stats-row">
+
+    <!-- Horizontal analyses bar -->
+    <div class="stat-box" style="padding:22px 26px;display:flex;flex-direction:column;justify-content:center;gap:14px">
+      <div style="display:flex;align-items:baseline;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(245,237,216,0.35);margin-bottom:5px">Analyses This Month</div>
+          {% if plan_limit %}
+            {% if left > 0 %}
+            <div style="font-size:13px;color:rgba(245,237,216,0.55)">You have <strong style="color:#4ade80">{{ left }} analyse{{ 's' if left != 1 }}</strong> remaining this month.</div>
+            {% else %}
+            <div style="font-size:13px;color:rgba(245,237,216,0.55)">No analyses left this month. <a href="/billing" style="color:var(--gold);text-decoration:none;font-weight:600">Upgrade →</a></div>
+            {% endif %}
+          {% else %}
+          <div style="font-size:13px;color:rgba(245,237,216,0.55)">You have <strong style="color:var(--gold)">unlimited</strong> analyses.</div>
+          {% endif %}
+        </div>
+        <div style="font-family:'Fraunces',serif;font-size:28px;font-weight:700;color:var(--gold);white-space:nowrap;margin-left:16px">
+          {{ used }}<span style="font-size:15px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:500;color:rgba(245,237,216,0.3)"> / {{ plan_limit if plan_limit else '∞' }}</span>
+        </div>
+      </div>
+
+      <!-- The horizontal bar -->
+      <div style="position:relative;width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:10px;overflow:hidden;border:1px solid rgba(245,237,216,0.08)">
+        <!-- Fill -->
+        <div style="position:absolute;top:0;left:0;bottom:0;width:{{ pct if plan_limit else 0 }}%;background:linear-gradient(90deg,var(--terra) 0%,var(--gold) 100%);border-radius:9px;transition:width .7s cubic-bezier(.22,1,.36,1);min-width:{% if used > 0 %}48px{% else %}0px{% endif %}">
+          {% if used > 0 %}
+          <span style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Fraunces',serif;font-size:15px;font-weight:700;color:#fff;white-space:nowrap">{{ used }}</span>
+          {% endif %}
+        </div>
+        <!-- Total label at right end -->
+        <span style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;font-weight:700;color:rgba(245,237,216,0.35)">{{ plan_limit if plan_limit else '∞' }}</span>
+      </div>
+
+      <div style="font-size:11px;color:rgba(245,237,216,0.25)">Resets on the 1st of each month</div>
+    </div>
+
+    <!-- Right column: Total + Member since -->
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="stat-box" style="flex:1">
+        <div class="stat-val">{{ total_analyses }}</div>
+        <div class="stat-lbl">Total Analyses</div>
+      </div>
+      <div class="stat-box" style="flex:1">
+        <div class="stat-val" style="font-size:17px">{{ member_since }}</div>
+        <div class="stat-lbl">Member Since</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- RESTAURANT INFO -->
+  <div class="card">
+    <div class="avatar-row">
+      <div class="avatar">{{ (user.restaurant_name or 'R')[0].upper() }}</div>
+      <div class="avatar-info">
+        <div class="avatar-name">{{ user.restaurant_name or 'Your Restaurant' }}</div>
+        <div class="avatar-email">{{ user.email }}</div>
+      </div>
+    </div>
+
+    <h2 class="card-title">Restaurant Information</h2>
+    <p class="card-sub">This info is used to personalise your reports and seasonal recommendations.</p>
+
+    {% if saved %}
+    <div class="alert alert-success">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Profile saved successfully.
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/profile">
+      <input type="hidden" name="action" value="profile"/>
+      <div class="form-grid">
+        <div class="field">
+          <label>Restaurant Name</label>
+          <input type="text" name="restaurant_name" value="{{ user.restaurant_name or '' }}" placeholder="The Golden Fork"/>
+        </div>
+        <div class="field">
+          <label>Cuisine Type</label>
+          <select name="cuisine_type">
+            <option value="">Select cuisine…</option>
+            {% for c in ['American','British','Chinese','French','Indian','Italian','Japanese','Korean','Mediterranean','Mexican','Middle Eastern','Modern Australian','Thai','Vietnamese','Other'] %}
+            <option value="{{ c }}" {% if user.cuisine_type == c %}selected{% endif %}>{{ c }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="field">
+          <label>Restaurant Location</label>
+          <input type="text" name="location" value="{{ user.location or '' }}" placeholder="e.g. Cape Town, South Africa"/>
+        </div>
+        <div class="field">
+          <label>Phone Number</label>
+          <input type="tel" name="phone" value="{{ user.phone or '' }}" placeholder="+1 555 000 0000"/>
+        </div>
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" value="{{ user.email }}" readonly/>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SUBSCRIPTION -->
+  <div class="card">
+    <h2 class="card-title">Subscription</h2>
+    <p class="card-sub">Your current plan and usage for this billing period.</p>
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
+      <span style="font-size:22px;font-weight:700;font-family:'Fraunces',serif">{{ plan_name }}</span>
+      <span class="plan-badge {{ 'badge-active' if plan_status == 'active' else 'badge-inactive' }}">
+        {{ 'Active' if plan_status == 'active' else 'Inactive' }}
+      </span>
+    </div>
+    {% if plan_status == 'active' %}
+    <div style="font-size:13px;color:var(--cream-3);margin-bottom:6px">
+      Analyses used this month: <strong style="color:var(--cream)">{{ used }}{% if plan_limit %} / {{ plan_limit }}{% else %} / Unlimited{% endif %}</strong>
+    </div>
+    {% if plan_limit %}
+    <div class="progress-bar">
+      <div class="progress-fill" style="width:{{ [[(used / plan_limit * 100)|round|int, 0]|max, 100]|min }}%"></div>
+    </div>
+    {% endif %}
+    {% endif %}
+    <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+      <a href="/billing" class="btn btn-outline btn-sm">Manage Billing →</a>
+      {% if plan_status != 'active' %}
+      <a href="/billing" class="btn btn-primary btn-sm">Choose a Plan →</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD -->
+  <div class="card">
+    <h2 class="card-title">Change Password</h2>
+    <p class="card-sub">Choose a strong password. Must be at least 6 characters.</p>
+
+    {% if pw_saved %}
+    <div class="alert alert-success">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      Password updated successfully.
+    </div>
+    {% endif %}
+    {% if pw_error %}
+    <div class="alert alert-error">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ pw_error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/profile">
+      <input type="hidden" name="action" value="password"/>
+      <div class="form-grid">
+        <div class="field full">
+          <label>Current Password</label>
+          <input type="password" name="current_password" placeholder="••••••••" autocomplete="current-password"/>
+        </div>
+        <div class="field">
+          <label>New Password</label>
+          <input type="password" name="new_password" placeholder="Min. 6 characters" autocomplete="new-password" minlength="6"/>
+        </div>
+        <div class="field">
+          <label>Confirm New Password</label>
+          <input type="password" name="confirm_password" placeholder="Repeat new password" autocomplete="new-password" minlength="6"/>
+        </div>
+      </div>
+      <div style="margin-top:20px">
+        <button type="submit" class="btn btn-primary">Update Password</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- DANGER ZONE -->
+  <div class="card" style="border-color:rgba(248,113,113,0.18);display:flex;align-items:center;justify-content:space-between;gap:24px">
+    <p style="font-size:14px;color:rgba(245,237,216,0.45);line-height:1.6;margin:0">Permanently delete your account and all associated data. This cannot be undone.</p>
+    <button type="button" class="btn btn-danger" onclick="startDelete()" style="flex-shrink:0">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      Delete My Account
+    </button>
+  </div>
+
+  <!-- LEGAL LINKS -->
+  <div style="display:flex;gap:20px;margin-top:8px;margin-bottom:48px">
+    <a href="/terms" style="font-size:13px;color:var(--cream-3);text-decoration:none" onmouseover="this.style.color='#F5EDD8'" onmouseout="this.style.color='rgba(245,237,216,0.32)'">Terms of Service</a>
+    <a href="/privacy" style="font-size:13px;color:var(--cream-3);text-decoration:none" onmouseover="this.style.color='#F5EDD8'" onmouseout="this.style.color='rgba(245,237,216,0.32)'">Privacy Policy</a>
+  </div>
+
+</main>
+</div>
+
+<!-- ── MODAL STEP 1: Unused analyses warning ── -->
+<div id="modal-step1" class="modal-backdrop" style="display:none">
+  <div class="modal-box">
+    <div class="modal-icon modal-icon-warn">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </div>
+    <h3 class="modal-title">You have unused analyses</h3>
+    <p class="modal-body" id="step1-body">
+      Your <strong>{{ plan_name }}</strong> subscription still has
+      <strong id="remaining-count">{{ (plan_limit - used) if plan_limit else 0 }}</strong>
+      {% if plan_limit %}analyse{{ 's' if (plan_limit - used) != 1 }} remaining{% endif %}
+      this month. Deleting your account will forfeit these immediately — no refund will be issued for the current billing period.
+    </p>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModals()">Cancel</button>
+      <button class="btn btn-warn" onclick="goStep2()">I understand, continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL STEP 2: Final confirmation ── -->
+<div id="modal-step2" class="modal-backdrop" style="display:none">
+  <div class="modal-box">
+    <div class="modal-icon modal-icon-danger">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+    </div>
+    <h3 class="modal-title">This will permanently delete:</h3>
+    <ul class="modal-list">
+      <li>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Your restaurant profile — <strong>{{ user.restaurant_name or 'Your Restaurant' }}</strong>
+      </li>
+      <li>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        All <strong>{{ total_analyses }} menu analysis reports</strong>
+      </li>
+      <li>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        All dish insights, trend &amp; seasonal recommendations
+      </li>
+      <li>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        All uploaded dish photos
+      </li>
+      <li>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+        Your active subscription (cancelled immediately)
+      </li>
+    </ul>
+    <p class="modal-body" style="margin-top:14px;font-size:13px">
+      Type <strong style="color:var(--cream)">DELETE</strong> to confirm:
+    </p>
+    <input type="text" id="confirm-input" placeholder="Type DELETE here" autocomplete="off"
+      style="width:100%;margin-top:8px;padding:10px 14px;background:rgba(248,113,113,0.07);border:1px solid rgba(248,113,113,0.3);border-radius:9px;font-size:14px;font-family:inherit;color:var(--cream);outline:none"/>
+    <div class="modal-actions" style="margin-top:20px">
+      <button class="btn btn-outline" onclick="closeModals()">Cancel</button>
+      <form method="POST" action="/delete-account" id="delete-form" style="display:inline">
+        <button type="button" id="delete-final-btn" class="btn btn-danger" onclick="submitDelete()" disabled>
+          Delete Everything Forever
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .btn-danger{background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.35);color:var(--red);transition:all .2s}
+  .btn-danger:hover{background:rgba(248,113,113,0.22);border-color:rgba(248,113,113,0.6)}
+  .btn-warn{background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.35);color:#fbbf24;transition:all .2s}
+  .btn-warn:hover{background:rgba(251,191,36,0.22)}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;animation:fadeIn .15s ease}
+  @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .modal-box{background:var(--surface);border:1px solid rgba(248,113,113,0.22);border-radius:20px;padding:36px;max-width:480px;width:100%;animation:slideUp .2s cubic-bezier(.22,1,.36,1)}
+  @keyframes slideUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+  .modal-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
+  .modal-icon-warn{background:rgba(251,191,36,0.12);border:1px solid rgba(251,191,36,0.25);color:#fbbf24}
+  .modal-icon-danger{background:rgba(248,113,113,0.12);border:1px solid rgba(248,113,113,0.25);color:var(--red)}
+  .modal-title{font-family:'Fraunces',serif;font-size:22px;font-weight:700;color:var(--cream);margin-bottom:12px}
+  .modal-body{font-size:14px;color:var(--cream-2);line-height:1.7}
+  .modal-list{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:4px}
+  .modal-list li{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cream-2)}
+  .modal-list li strong{color:var(--cream)}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:24px}
+  #delete-final-btn:disabled{opacity:.4;cursor:not-allowed}
+  #delete-final-btn:not(:disabled){background:rgba(248,113,113,0.2);border-color:rgba(248,113,113,0.6);color:var(--red)}
+  #delete-final-btn:not(:disabled):hover{background:rgba(248,113,113,0.35)}
+</style>
+
+<script>
+  const HAS_ACTIVE_SUB  = {{ 'true' if plan_status == 'active' else 'false' }};
+  const ANALYSES_LEFT   = {{ (plan_limit - used) if (plan_limit and plan_status == 'active') else 0 }};
+
+  function startDelete() {
+    if (HAS_ACTIVE_SUB && ANALYSES_LEFT > 0) {
+      document.getElementById('modal-step1').style.display = 'flex';
+    } else {
+      goStep2();
+    }
+  }
+
+  function goStep2() {
+    document.getElementById('modal-step1').style.display = 'none';
+    document.getElementById('modal-step2').style.display = 'flex';
+    document.getElementById('confirm-input').focus();
+  }
+
+  function closeModals() {
+    document.getElementById('modal-step1').style.display = 'none';
+    document.getElementById('modal-step2').style.display = 'none';
+    document.getElementById('confirm-input').value = '';
+    document.getElementById('delete-final-btn').disabled = true;
+  }
+
+  document.getElementById('confirm-input').addEventListener('input', function() {
+    document.getElementById('delete-final-btn').disabled = this.value.trim() !== 'DELETE';
+  });
+
+  function submitDelete() {
+    if (document.getElementById('confirm-input').value.trim() !== 'DELETE') return;
+    document.getElementById('delete-form').submit();
+  }
+
+  // Close on backdrop click
+  document.getElementById('modal-step1').addEventListener('click', function(e) {
+    if (e.target === this) closeModals();
+  });
+  document.getElementById('modal-step2').addEventListener('click', function(e) {
+    if (e.target === this) closeModals();
+  });
+</script>
+
+</body>
+</html>
